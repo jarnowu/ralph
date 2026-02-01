@@ -10,6 +10,8 @@
     "devServerUrl": "http://localhost:3000"
   },
 
+  "prd": "docs/PRD.md",
+
   "testCredentials": {
     "user": { "email": "test@example.com", "password": "testpass123" },
     "admin": { "email": "admin@example.com", "password": "adminpass123" }

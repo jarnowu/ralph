@@ -303,6 +303,7 @@ ralph/
   "globalContext": {
     "devServerUrl": "http://localhost:3000"
   },
+  "prd": "docs/PRD.md",
   "testCredentials": {
     "user": { "email": "...", "password": "..." },
     "admin": { "email": "...", "password": "..." }
@@ -320,6 +321,7 @@ ralph/
 ```
 
 **Field reference:**
+- `prd` - Path to PRD file for product vision (Watcher uses to suggest features)
 - `testCredentials` - Login credentials for authenticated testing
 - `testing.viewports` - Screen sizes to test (`mobile`=375px, `tablet`=768px, `desktop`=1280px)
 - `conventions` - Rules both agents check against (keep to 10-15 items)

@@ -49,29 +49,33 @@ READ watcher-state.json → WHAT PHASE? → discovery | testing | review | maint
 
 ## PHASE: discovery
 
-**Goal:** Understand app, import OR create epics.
+**Goal:** Understand app and vision, import OR create epics.
 
 1. Read `epic-guidance.json` - extract `teamId`, `projectId`, `defaultLabels`
 
-2. **Check Linear for existing epics:**
+2. **If `prd` field exists, read the PRD file** to understand:
+   - What is this product?
+   - Who are the users?
+   - What are the goals/features planned?
+   - Use this context when creating epics and suggesting features
+
+3. **Check Linear for existing epics:**
    ```
    list_issues: team, project, limit=50
    Filter: issues with NO parentId (these are epics/top-level issues)
    ```
 
-3. **If existing epics found:**
+4. **If existing epics found:**
    - Import them into `watcher-state.json` (don't create duplicates!)
    - For each epic, identify its routes by reading its description or subtasks
    - If routes unclear, launch browser to discover routes for that feature area
 
-4. **If NO existing epics (fresh project):**
+5. **If NO existing epics (fresh project):**
    - Launch browser, explore all routes, identify feature areas
-   - Create epics in Linear (one per feature area):
-     ```
-     team, project, labels: from epic-guidance.json
-     ```
+   - Create epics in Linear (one per feature area)
+   - Use PRD context (if available) to identify planned features as epics
 
-5. Update `watcher-state.json`:
+6. Update `watcher-state.json`:
    ```json
    {
      "phase": "testing",
@@ -82,9 +86,9 @@ READ watcher-state.json → WHAT PHASE? → discovery | testing | review | maint
    ```
    Note: `linearId` = UUID from Linear (needed for `parentId`), not identifier.
 
-6. Close browser (if opened): `browser_close`
+7. Close browser (if opened): `browser_close`
 
-7. Output: `<watcher-session><phase>discovery</phase><epics-imported>N</epics-imported><epics-created>N</epics-created></watcher-session>`
+8. Output: `<watcher-session><phase>discovery</phase><epics-imported>N</epics-imported><epics-created>N</epics-created></watcher-session>`
 
 ---
 

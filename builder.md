@@ -24,9 +24,11 @@ Developer agent. Each session: implement ONE task from Linear, then exit.
 ## Step 1: Load Context
 
 Read in order:
-- **`epic-guidance.json`** → `linearConfig`, `conventions`, `docs`
+- **`epic-guidance.json`** → `linearConfig`, `conventions`, `docs`, `prd`
 - **`progress.txt`** → Codebase Patterns section first
 - **`AGENTS.md`** → Project-specific patterns
+
+**prd** (optional) - Path to PRD file. Read for product vision and feature context.
 
 **conventions** - Array of rules to follow. Read before implementing.
 

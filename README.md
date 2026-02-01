@@ -286,6 +286,7 @@ NOTHING to improve   → Report "CLEAN" → That's success
 
 | Field | Purpose |
 |-------|---------|
+| `prd` | Path to PRD file for product vision (optional) |
 | `testCredentials` | Login credentials for authenticated routes |
 | `testing.viewports` | Screen sizes: `["mobile", "desktop"]` or `["mobile", "tablet", "desktop"]` |
 | `conventions` | Array of rules to follow (keep to 10-15 items) |
