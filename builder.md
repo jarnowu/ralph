@@ -24,9 +24,17 @@ Developer agent. Each session: implement ONE task from Linear, then exit.
 ## Step 1: Load Context
 
 Read in order:
-- **`epic-guidance.json`** → `linearConfig` (team/project IDs), `currentEpic`, `globalContext`
-- **`progress.txt`** → Codebase Patterns section first (established patterns, gotchas)
+- **`epic-guidance.json`** → `linearConfig`, `conventions`, `docs`
+- **`progress.txt`** → Codebase Patterns section first
 - **`AGENTS.md`** → Project-specific patterns
+
+**conventions** - Array of rules to follow. Read before implementing.
+
+**docs** - Documentation reference. Can be:
+- String: `"docs/index.md"` - read this index, load relevant docs as needed
+- Object: `{ "auth": "docs/auth.md", ... }` - load doc matching task topic
+
+Don't read all docs upfront. Load on-demand based on task requirements.
 
 ---
 

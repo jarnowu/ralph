@@ -1,6 +1,4 @@
 {
-  "version": "1.0.0",
-
   "linearConfig": {
     "teamId": "YOUR_TEAM_ID",
     "projectId": "YOUR_PROJECT_ID",
@@ -8,21 +6,24 @@
     "defaultLabels": ["ralph-generated"]
   },
 
-  "currentEpic": {
-    "linearId": null,
-    "title": "Initial Setup",
-    "approach": "Describe the high-level technical approach",
-    "techStack": [],
-    "keyDecisions": []
-  },
-
   "globalContext": {
-    "projectPath": ".",
-    "devServerUrl": "http://localhost:3000",
-    "designSystem": "",
-    "apiPattern": "",
-    "testingStrategy": ""
+    "devServerUrl": "http://localhost:3000"
   },
 
-  "recentLearnings": []
+  "testCredentials": {
+    "user": { "email": "test@example.com", "password": "testpass123" },
+    "admin": { "email": "admin@example.com", "password": "adminpass123" }
+  },
+
+  "testing": {
+    "viewports": ["mobile", "desktop"]
+  },
+
+  "conventions": [
+    "Example: Use shadcn/ui components from @/components/ui",
+    "Example: Tailwind for styling, no custom CSS",
+    "Example: API routes use tRPC pattern"
+  ],
+
+  "docs": "docs/index.md"
 }

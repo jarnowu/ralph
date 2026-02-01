@@ -282,6 +282,7 @@ ralph/
 - Linear configuration (team ID, project ID, default labels)
 - Current epic context (for Builder to understand what we're building)
 - Global context (dev server URL, tech stack)
+- Test credentials (for Watcher to access authenticated routes)
 
 **watcher-state.json** - Watcher's private state:
 - Current phase (discovery/testing/review/maintenance)
@@ -299,17 +300,30 @@ ralph/
     "projectName": "My Project",
     "defaultLabels": ["ralph-generated"]
   },
-  "currentEpic": {
-    "linearId": null,
-    "title": "Current Focus",
-    "approach": "Technical approach description"
-  },
   "globalContext": {
-    "projectPath": ".",
     "devServerUrl": "http://localhost:3000"
-  }
+  },
+  "testCredentials": {
+    "user": { "email": "...", "password": "..." },
+    "admin": { "email": "...", "password": "..." }
+  },
+  "testing": {
+    "viewports": ["mobile", "desktop"]
+  },
+  "conventions": [
+    "Use shadcn/ui components",
+    "Tailwind for styling",
+    "tRPC for API routes"
+  ],
+  "docs": "docs/index.md"
 }
 ```
+
+**Field reference:**
+- `testCredentials` - Login credentials for authenticated testing
+- `testing.viewports` - Screen sizes to test (`mobile`=375px, `tablet`=768px, `desktop`=1280px)
+- `conventions` - Rules both agents check against (keep to 10-15 items)
+- `docs` - Either an index file path OR object mapping topics to files
 
 ### watcher-state.json
 
@@ -341,10 +355,22 @@ ralph/
 
 ### Watcher Phases
 
-1. **discovery** - Explore app, create epics in Linear with routes
+1. **discovery** - Check Linear for existing epics first, import them; only create new epics if none exist
 2. **testing** - Test ONE route + ONE category per session
-3. **review** - Epic fully tested, decide next epic or new cycle
+3. **review** - Epic fully tested, check for new epics in Linear, decide next epic or new cycle
 4. **maintenance** - App healthy, curate progress.txt, wait for Builder
+
+### Linear Sync Behavior
+
+The Watcher syncs with Linear to avoid duplicates:
+- **Discovery**: Queries Linear for existing epics before creating new ones
+- **Review**: Checks for epics created outside Watcher (manually or by other tools)
+- **Task creation**: Always searches for similar tasks before creating
+
+This means you can:
+- Start Watcher on a project with existing epics - they'll be imported
+- Manually create epics in Linear - Watcher will pick them up in review phase
+- Use Linear's UI alongside Watcher without conflicts
 
 ### Watcher Task Creation
 

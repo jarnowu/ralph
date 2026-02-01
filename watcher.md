@@ -6,6 +6,33 @@ QA agent. Find **real issues**, suggest **genuine improvements**. If the app is 
 
 ---
 
+## Linear Sync
+
+- **Discovery phase imports existing epics** - won't create duplicates
+- **Review phase checks for new epics** - picks up manually-created epics
+- **Always search before creating** - avoid duplicate tasks and epics
+
+---
+
+## Project Config
+
+Read `epic-guidance.json` at session start for:
+
+**testCredentials** - Login to access protected routes:
+- Use appropriate role (admin for admin features, user for regular)
+- Don't re-login if session persists
+
+**testing.viewports** - Test at multiple screen sizes:
+- `mobile` = 375×667, `tablet` = 768×1024, `desktop` = 1280×800
+- Test current route at ALL viewports in ONE session (resize, don't spawn new sessions)
+- Note viewport-specific issues in task descriptions
+
+**conventions** - Rules to check against:
+- Read before testing UI/UX
+- Flag violations as issues
+
+---
+
 ## Resource Management
 
 Call `browser_close` before exiting every session. Unclosed browsers accumulate.
@@ -22,15 +49,29 @@ READ watcher-state.json → WHAT PHASE? → discovery | testing | review | maint
 
 ## PHASE: discovery
 
-**Goal:** Understand app, create epics.
+**Goal:** Understand app, import OR create epics.
 
 1. Read `epic-guidance.json` - extract `teamId`, `projectId`, `defaultLabels`
-2. Launch browser, explore all routes, identify feature areas
-3. Create epics in Linear (one per feature area):
+
+2. **Check Linear for existing epics:**
    ```
-   team, project, labels: from epic-guidance.json
+   list_issues: team, project, limit=50
+   Filter: issues with NO parentId (these are epics/top-level issues)
    ```
-4. Update `watcher-state.json`:
+
+3. **If existing epics found:**
+   - Import them into `watcher-state.json` (don't create duplicates!)
+   - For each epic, identify its routes by reading its description or subtasks
+   - If routes unclear, launch browser to discover routes for that feature area
+
+4. **If NO existing epics (fresh project):**
+   - Launch browser, explore all routes, identify feature areas
+   - Create epics in Linear (one per feature area):
+     ```
+     team, project, labels: from epic-guidance.json
+     ```
+
+5. Update `watcher-state.json`:
    ```json
    {
      "phase": "testing",
@@ -40,8 +81,10 @@ READ watcher-state.json → WHAT PHASE? → discovery | testing | review | maint
    }
    ```
    Note: `linearId` = UUID from Linear (needed for `parentId`), not identifier.
-5. Close browser: `browser_close`
-6. Output: `<watcher-session><phase>discovery</phase><epics-created>N</epics-created></watcher-session>`
+
+6. Close browser (if opened): `browser_close`
+
+7. Output: `<watcher-session><phase>discovery</phase><epics-imported>N</epics-imported><epics-created>N</epics-created></watcher-session>`
 
 ---
 
@@ -104,14 +147,24 @@ READ watcher-state.json → WHAT PHASE? → discovery | testing | review | maint
 
 **Goal:** Epic done. Decide next.
 
-1. If pending epics exist:
+1. If pending epics exist in state:
    - Set `currentEpic` to next pending epic, `phase = "testing"`, reset `testingProgress`
+
 2. If all epics tested:
-   - Check Linear for Builder's pending tasks
-   - Many pending → `phase = "maintenance"`
-   - Few pending → `cycle++`, reset all epics to "pending", `phase = "testing"`
-3. New epics only if genuinely needed (use same quality gate, include team/project/labels)
-4. Output: `<watcher-session><phase>review</phase><next-action>next-epic|new-cycle|maintenance</next-action></watcher-session>`
+   - **Check Linear for NEW epics** (created outside Watcher, e.g., manually):
+     ```
+     list_issues: team, project, limit=20
+     Filter: no parentId AND not in watcher-state.json
+     ```
+   - If new epics found → import them, set `phase = "testing"`
+   - If no new epics:
+     - Check Linear for Builder's pending tasks
+     - Many pending → `phase = "maintenance"`
+     - Few pending → `cycle++`, reset all epics to "pending", `phase = "testing"`
+
+3. Create new epics only if genuinely needed AND not already in Linear (search first!)
+
+4. Output: `<watcher-session><phase>review</phase><next-action>next-epic|new-cycle|maintenance|imported-new-epics</next-action></watcher-session>`
 
 ---
 

@@ -282,6 +282,15 @@ NOTHING to improve   → Report "CLEAN" → That's success
   - Domain: `Frontend` | `Backend` | `Security`
   - Type: `Bug` | `Feature` | `Improvement`
 
+**Configuration options in `epic-guidance.json`:**
+
+| Field | Purpose |
+|-------|---------|
+| `testCredentials` | Login credentials for authenticated routes |
+| `testing.viewports` | Screen sizes: `["mobile", "desktop"]` or `["mobile", "tablet", "desktop"]` |
+| `conventions` | Array of rules to follow (keep to 10-15 items) |
+| `docs` | Doc reference: `"docs/index.md"` OR `{ "auth": "docs/auth.md", ... }` |
+
 ### Architecture
 
 | Agent | Script | Role |
@@ -301,10 +310,9 @@ Both share:
    ```bash
    cp epic-guidance.json.example epic-guidance.json
    # Edit epic-guidance.json:
-   # - Set linearConfig.teamId
-   # - Set linearConfig.projectId
-   # - Set currentEpic with your initial focus
+   # - Set linearConfig.teamId and projectId
    # - Set globalContext.devServerUrl
+   # - Set testCredentials for authenticated testing (optional)
    ```
 
 2. **Initialize Watcher state:**
