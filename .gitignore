@@ -3,6 +3,10 @@ prd.json
 progress.txt
 .last-branch
 
+# Dual-AI configuration (contains user-specific config)
+epic-guidance.json
+watcher-state.json
+
 # Archive is optional to commit
 # archive/
 

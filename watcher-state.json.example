@@ -1,0 +1,37 @@
+{
+  "phase": "discovery",
+
+  "epics": [],
+  "// epics format": {
+    "linearId": "uuid-from-linear (needed for parentId)",
+    "identifier": "LAT-123 (human-readable)",
+    "title": "Feature Area",
+    "status": "pending|testing|tested",
+    "routes": ["/route1", "/route2"]
+  },
+
+  "currentEpic": null,
+
+  "testingProgress": {
+    "routeIndex": 0,
+    "categoryIndex": 0
+  },
+
+  "categories": [
+    "functional",
+    "errors",
+    "uiux",
+    "performance",
+    "accessibility"
+  ],
+
+  "recentTaskIds": [],
+
+  "cycle": 1,
+
+  "stats": {
+    "issuesFoundThisCycle": 0,
+    "cleanTestsThisCycle": 0,
+    "lastSessionAt": null
+  }
+}

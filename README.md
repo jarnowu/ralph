@@ -2,7 +2,11 @@
 
 ![Ralph](ralph.webp)
 
-Ralph is an autonomous AI agent loop that runs AI coding tools ([Amp](https://ampcode.com) or [Claude Code](https://docs.anthropic.com/en/docs/claude-code)) repeatedly until all PRD items are complete. Each iteration is a fresh instance with clean context. Memory persists via git history, `progress.txt`, and `prd.json`.
+Ralph is an autonomous AI agent loop that runs AI coding tools ([Claude Code](https://docs.anthropic.com/en/docs/claude-code) or [Amp](https://ampcode.com)) repeatedly until all tasks are complete. Each iteration is a fresh instance with clean context.
+
+**Two Modes:**
+- **Single-Agent Mode** - Original Ralph with `prd.json` for bounded task lists (5-15 stories)
+- **Dual-Agent Mode** - Watcher + Builder coordinated through Linear for continuous development
 
 Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 
@@ -13,8 +17,12 @@ Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 - One of the following AI coding tools installed and authenticated:
   - [Amp CLI](https://ampcode.com) (default)
   - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (`npm install -g @anthropic-ai/claude-code`)
-- `jq` installed (`brew install jq` on macOS)
+- `jq` installed (`brew install jq` on macOS, `choco install jq` on Windows)
 - A git repository for your project
+
+**For Dual-Agent Mode (additional requirements):**
+- [Linear](https://linear.app) account with API access - add the Linear MCP server to Claude Code (`/mcp add linear`)
+- [Playwright MCP](https://github.com/anthropics/claude-code-plugins) for browser testing - enable via `/plugin add playwright`
 
 ## Setup
 
@@ -138,7 +146,7 @@ Ralph will:
 | `CLAUDE.md` | Prompt template for Claude Code |
 | `prd.json` | User stories with `passes` status (the task list) |
 | `prd.json.example` | Example PRD format for reference |
-| `progress.txt` | Append-only learnings for future iterations |
+| `progress.txt` | Curated learnings (max 20 patterns, 10 sessions) |
 | `skills/prd/` | Skill for generating PRDs (works with Amp and Claude Code) |
 | `skills/ralph/` | Skill for converting PRDs to JSON (works with Amp and Claude Code) |
 | `.claude-plugin/` | Plugin manifest for Claude Code marketplace discovery |
@@ -231,6 +239,198 @@ After copying `prompt.md` (for Amp) or `CLAUDE.md` (for Claude Code) to your pro
 ## Archiving
 
 Ralph automatically archives previous runs when you start a new feature (different `branchName`). Archives are saved to `archive/YYYY-MM-DD-feature-name/`.
+
+## Dual-Agent Mode (Continuous Development)
+
+For full application development beyond bounded PRDs, use dual-agent mode with Linear as the task queue.
+
+### Why Dual-Agent?
+
+Single-agent mode breaks down for full app development because:
+- `prd.json` bloats with 100+ tasks, filling context on first read
+- No mechanism for discovering new work (bugs, improvements)
+- One agent both finding AND fixing problems leads to context pollution
+- Work queue is finite - loop ends when tasks complete
+
+Dual-agent mode solves this with:
+- **Linear as task queue** - Scales to unlimited tasks
+- **Separation of concerns** - Watcher finds, Builder fixes
+- **Quality-first discovery** - Watcher finds REAL issues, not manufactured ones
+- **Sustainable operation** - Maintenance phase when app is healthy
+
+### Watcher Philosophy
+
+The Watcher is a **quality guardian**, not a **task factory**.
+
+```
+FIND real issues     → Create task
+THINK of improvement → Is it GENUINELY useful? → Yes → Create task
+                                               → No  → Do nothing
+NOTHING to improve   → Report "CLEAN" → That's success
+```
+
+**Watcher does NOT:**
+- Manufacture issues to justify its existence
+- Create tasks for theoretical edge cases
+- Suggest features nobody needs
+- Add documentation busywork
+
+**Critical requirements:**
+- Call `browser_close` before exiting every session (prevents resource leaks)
+- Every task must include: `team`, `project`, `parentId` (epic UUID), `labels`
+- Labels: `["ralph-generated", "<domain>", "<type>"]`
+  - Domain: `Frontend` | `Backend` | `Security`
+  - Type: `Bug` | `Feature` | `Improvement`
+
+### Architecture
+
+| Agent | Script | Role |
+|-------|--------|------|
+| **Watcher** | `watcher.sh` | Tests app, finds bugs/issues, creates Linear tasks |
+| **Builder** | `builder.sh` | Implements ONE Linear task per iteration |
+
+Both share:
+- Linear (task queue via MCP)
+- `epic-guidance.json` (lightweight context)
+- `progress.txt` (learnings log)
+- Git repository
+
+### Setup
+
+1. **Configure Linear and project context:**
+   ```bash
+   cp epic-guidance.json.example epic-guidance.json
+   # Edit epic-guidance.json:
+   # - Set linearConfig.teamId
+   # - Set linearConfig.projectId
+   # - Set currentEpic with your initial focus
+   # - Set globalContext.devServerUrl
+   ```
+
+2. **Initialize Watcher state:**
+   ```bash
+   cp watcher-state.json.example watcher-state.json
+   # Starts in "discovery" phase
+   # First Watcher session will explore app and create epics
+   # No manual route configuration needed
+   ```
+
+3. **Start both agents:**
+   ```bash
+   # Terminal 1: Watcher (tests app, creates tasks)
+   ./watcher.sh --project "My Project"
+
+   # Terminal 2: Builder (implements tasks)
+   ./builder.sh --project "My Project"
+   ```
+
+### Agent Scripts
+
+```bash
+# Watcher options
+./watcher.sh                      # Use config from epic-guidance.json
+./watcher.sh --sleep 120          # Test every 2 minutes
+./watcher.sh --project "App"      # Override Linear project
+./watcher.sh --max 100            # Run max 100 iterations
+
+# Builder options
+./builder.sh                      # Use config from epic-guidance.json
+./builder.sh --sleep 10           # Check for tasks every 10s
+./builder.sh --project "App"      # Override Linear project
+./builder.sh --max 50             # Run max 50 iterations
+```
+
+### The Feedback Loop
+
+```
+WATCHER:
+  Session 1: [discovery] Explores app → creates 3 epics in Linear
+             Epic 1: Auth, Epic 2: Dashboard, Epic 3: Settings
+
+  Session 2: [testing] Auth: /login + functional → finds bug → creates task
+  Session 3: [testing] Auth: /login + errors → clean
+  Session 4: [testing] Auth: /login + uiux → finds issue → creates task
+  ...
+  Session N: [testing] Auth: all routes+categories done
+  Session N+1: [review] Auth complete → move to Dashboard epic
+  ...
+  Session M: [review] All epics done → CYCLE 2 begins → reset all epics
+
+BUILDER (parallel):
+  Session 1: Picks task LIN-123 → implements → commits → marks done
+  Session 2: Picks task LIN-124 → implements → commits → marks done
+  Session 3: No tasks → waits
+  ...
+
+... cycles continue, Watcher finds new issues each cycle as app evolves
+```
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `watcher.sh` | Bash loop for Watcher agent |
+| `builder.sh` | Bash loop for Builder agent |
+| `watcher.md` | Watcher agent prompt (one route+category per session) |
+| `builder.md` | Builder agent prompt (one task per session) |
+| `epic-guidance.json` | Linear config and project context (gitignored) |
+| `watcher-state.json` | Watcher's testing progress and coverage (gitignored) |
+| `*.example` | Templates to copy and configure |
+
+### Switching Projects
+
+```bash
+# Option 1: CLI flag
+./watcher.sh --project "New Project"
+./builder.sh --project "New Project"
+
+# Option 2: Edit epic-guidance.json
+# Change linearConfig.projectId and linearConfig.projectName
+```
+
+## Troubleshooting
+
+### Single-Agent Mode
+
+| Problem | Solution |
+|---------|----------|
+| `jq: command not found` | Install jq: `brew install jq` (macOS), `choco install jq` (Windows), `apt install jq` (Linux) |
+| Ralph stops without completing | Check `progress.txt` for errors. Increase `max_iterations` if needed. |
+| Commits fail quality checks | Fix the failing checks manually, then restart Ralph. |
+| Wrong branch | Delete `prd.json` and `.last-branch`, then restart with correct PRD. |
+
+### Dual-Agent Mode
+
+| Problem | Solution |
+|---------|----------|
+| `Linear MCP not found` | Run `/mcp add linear` in Claude Code and authenticate. |
+| Tasks not appearing in project | Ensure `project` and `parentId` are set in task creation. Check `epic-guidance.json` has correct IDs. |
+| Watcher creates too many tasks | Quality gate not working - check `watcher.md` is being read. Reset `watcher-state.json` to discovery phase. |
+| Builder picks blocked tasks | Verify `blockedBy` field is being checked. Update to latest `builder.md`. |
+| Browser not closing | Playwright MCP issue - manually close browser. Check Watcher exits cleanly. |
+| "NO_TASKS" but tasks exist | Check Linear project ID matches. Verify task state is "unstarted" not "backlog". |
+
+### General
+
+| Problem | Solution |
+|---------|----------|
+| Context filling up | Tasks are too large. Break into smaller stories/tasks. |
+| Same mistakes repeating | Check `progress.txt` Codebase Patterns section. Add missing patterns. |
+| Agent not following instructions | Verify prompt file exists and is readable. Check for syntax errors in JSON configs. |
+
+## Versioning
+
+This project uses [Semantic Versioning](https://semver.org/):
+
+- **MAJOR**: Breaking changes to prompt format, state file schema, or CLI arguments
+- **MINOR**: New features, new agent capabilities, additional configuration options
+- **PATCH**: Bug fixes, documentation updates, prompt improvements
+
+Current version: See [releases](https://github.com/jarnowu/ralph/releases).
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on submitting issues and pull requests.
 
 ## References
 
