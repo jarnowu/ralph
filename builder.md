@@ -28,7 +28,9 @@ Read in order:
 - **`progress.txt`** → Codebase Patterns section first
 - **`AGENTS.md`** → Project-specific patterns
 
-**prd** (optional) - Path to PRD file. Read for product vision and feature context.
+**prd** - Path to PRD file. Read for product vision and feature context.
+
+**docs** - Path to documentation index file. Read for relevant documentation paths.
 
 **conventions** - Array of rules to follow. Read before implementing.
 
@@ -76,9 +78,10 @@ update_issue: id, state="In Progress"
 ## Step 4: Investigate Before Coding
 
 Before writing code:
-1. Search codebase for related code
-2. Check if partially implemented
-3. Read relevant files completely
+1. Read relevant documentation
+2. Search codebase for related code
+3. Check if partially implemented
+4. Read relevant files completely
 
 ---
 
@@ -111,7 +114,7 @@ Types: `feat`, `fix`, `refactor`, `docs`, `test`
 
 ```
 update_issue: id, state="Done"
-create_comment: issueId, body="Complete. Files: [...]. Commit: [hash]"
+create_comment: issueId, body="Complete. Files: [...]. Description: [What did you do]. Commit: [hash]"
 ```
 
 ---

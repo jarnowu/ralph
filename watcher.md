@@ -98,25 +98,36 @@ READ watcher-state.json → WHAT PHASE? → discovery | testing | review | maint
 
 1. Read state → get current epic, route, category
 
-2. Launch browser, navigate to route, check console for errors
+2. **If `prd` field exists in `watcher-state.json`, read the PRD file** to understand:
+   - What is this product?
+   - Who are the users?
+   - What are the goals/features planned?
+   - Use this context when creating epics and suggesting features
 
-3. Test based on category:
+3. **If `docs` field exists in `watcher-state.json`, read the index file** to understand:
+   - How documentation is structured
+   - Which documents are relevant to current task
+   - How to avoid cluttered, unnecessary documentation
+
+4. Launch browser, navigate to route, check console for errors
+
+5. Test based on category:
    - `functional` - Does it work?
    - `errors` - Console errors, error handling
    - `uiux` - User-friendly?
    - `performance` - Fast enough?
    - `accessibility` - Accessible?
 
-4. **Quality gate** (skip for console errors/crashes - always create those):
+6. **Quality gate** (skip for console errors/crashes - always create those):
    - Is this REAL, not theoretical?
    - Would users NOTICE and CARE?
    - Worth Builder's time?
 
    All yes → create task. Any no → skip.
 
-5. **If nothing wrong:** Report CLEAN. Don't manufacture issues.
+7. **If nothing wrong:** Report CLEAN. Don't manufacture issues.
 
-6. Create tasks:
+8. Create tasks:
 
    **Duplicate check:** Check `recentTaskIds` first, then search Linear (2-3 key terms, limit 5).
 
@@ -136,14 +147,14 @@ READ watcher-state.json → WHAT PHASE? → discovery | testing | review | maint
 
    **Dependencies:** If task A requires task B, create B first, then A with `blockedBy: [B.id]`
 
-7. Update state:
+9. Update state:
    - Add task IDs to `recentTaskIds`
    - Advance: `categoryIndex++`. If categories exhausted → `categoryIndex=0, routeIndex++`
    - If all routes done → set `epic.status = "tested"`, `phase = "review"`
 
-8. Close browser: `browser_close`
+10. Close browser: `browser_close`
 
-9. Output: `<watcher-session><phase>testing</phase><tested>route+category</tested><result>CLEAN|ISSUES_FOUND</result></watcher-session>`
+11. Output: `<watcher-session><phase>testing</phase><tested>route+category</tested><result>CLEAN|ISSUES_FOUND</result></watcher-session>`
 
 ---
 
@@ -154,7 +165,18 @@ READ watcher-state.json → WHAT PHASE? → discovery | testing | review | maint
 1. If pending epics exist in state:
    - Set `currentEpic` to next pending epic, `phase = "testing"`, reset `testingProgress`
 
-2. If all epics tested:
+2. **If `prd` field exists, read the PRD file** to understand:
+   - What is this product?
+   - Who are the users?
+   - What are the goals/features planned?
+   - Use this context when creating epics and suggesting features   
+
+3. **If `docs` field exists in `watcher-state.json`, read the index file** to understand:
+   - How documentation is structured
+   - Which documents are relevant to current task
+   - How to avoid cluttered, unnecessary documentation   
+
+4. If all epics tested:
    - **Check Linear for NEW epics** (created outside Watcher, e.g., manually):
      ```
      list_issues: team, project, limit=20
@@ -166,9 +188,9 @@ READ watcher-state.json → WHAT PHASE? → discovery | testing | review | maint
      - Many pending → `phase = "maintenance"`
      - Few pending → `cycle++`, reset all epics to "pending", `phase = "testing"`
 
-3. Create new epics only if genuinely needed AND not already in Linear (search first!)
+5. Create new epics only if genuinely needed AND not already in Linear (search first!)
 
-4. Output: `<watcher-session><phase>review</phase><next-action>next-epic|new-cycle|maintenance|imported-new-epics</next-action></watcher-session>`
+6. Output: `<watcher-session><phase>review</phase><next-action>next-epic|new-cycle|maintenance|imported-new-epics</next-action></watcher-session>`
 
 ---
 
