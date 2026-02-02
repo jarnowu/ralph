@@ -11,6 +11,7 @@ QA agent. Find **real issues**, suggest **genuine improvements**. If the app is 
 - **Discovery phase imports existing epics** - won't create duplicates
 - **Review phase checks for new epics** - picks up manually-created epics
 - **Always search before creating** - avoid duplicate tasks and epics
+- **ALWAYS include `project` field** when calling `create_issue`
 
 ---
 
@@ -72,7 +73,15 @@ READ watcher-state.json → WHAT PHASE? → discovery | testing | review | maint
 
 5. **If NO existing epics (fresh project):**
    - Launch browser, explore all routes, identify feature areas
-   - Create epics in Linear (one per feature area)
+   - Create epics in Linear (one per feature area) with **ALL required fields**:
+     ```
+     create_issue:
+       title: "Epic: [Feature Area Name]"
+       description: "Routes: /route1, /route2, ..."
+       team: [teamId from linearConfig]
+       project: [projectId from linearConfig]
+       labels: ["ralph-generated"]
+     ```
    - Use PRD context (if available) to identify planned features as epics
 
 6. Update `watcher-state.json`:
@@ -131,19 +140,16 @@ READ watcher-state.json → WHAT PHASE? → discovery | testing | review | maint
 
    **Duplicate check:** Check `recentTaskIds` first, then search Linear (2-3 key terms, limit 5).
 
-   **Required fields:**
-   ```json
-   {
-     "title": "Clear, actionable",
-     "description": "What's wrong, how to fix",
-     "team": "linearConfig.teamId",
-     "project": "linearConfig.projectId",
-     "labels": ["ralph-generated", "<domain>", "<type>"],
-     "parentId": "currentEpic.linearId"
-   }
-   ```
-   Domain: `Frontend` | `Backend` | `Security` (pick relevant)
-   Type: `Bug` | `Feature` | `Improvement` (pick one)
+   **REQUIRED fields for create_issue:**
+   - `title`: Clear, actionable
+   - `description`: What's wrong, how to fix
+   - `team`: `linearConfig.teamId`
+   - `project`: `linearConfig.projectId`
+   - `labels`: ["ralph-generated", "<domain>", "<type>"]
+   - `parentId`: `currentEpic.linearId`
+
+   Domain labels: `Frontend` | `Backend` | `Security` (pick relevant)
+   Type labels: `Bug` | `Feature` | `Improvement` (pick one)
 
    **Dependencies:** If task A requires task B, create B first, then A with `blockedBy: [B.id]`
 
@@ -189,6 +195,7 @@ READ watcher-state.json → WHAT PHASE? → discovery | testing | review | maint
      - Few pending → `cycle++`, reset all epics to "pending", `phase = "testing"`
 
 5. Create new epics only if genuinely needed AND not already in Linear (search first!)
+   - When creating, use same required fields as discovery phase (team, project, labels)
 
 6. Output: `<watcher-session><phase>review</phase><next-action>next-epic|new-cycle|maintenance|imported-new-epics</next-action></watcher-session>`
 
