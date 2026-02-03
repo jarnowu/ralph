@@ -58,13 +58,6 @@ recall version
 brew install hyperengineering/tap/recall
 ```
 
-**macOS/Linux:**
-```bash
-# Download and extract (adjust version/arch as needed)
-tar -xzf recall_x.x.x_darwin_arm64.tar.gz
-sudo mv recall /usr/local/bin/
-```
-
 #### Verify Installation
 
 ```bash
@@ -74,6 +67,14 @@ recall version
 ### Step 2: Add Recall MCP Server
 
 Add to your Claude Code MCP configuration.
+
+#### Option A: One-liner (Recommended)
+
+```bash
+claude mcp add-json recall '{"type":"stdio","command":"recall","args":["mcp"],"env":{"RECALL_DEBUG":"false"}}' --scope user
+```
+
+#### Option B: Manual Configuration
 
 **Find your settings file:**
 - macOS/Linux: `~/.claude/settings.json`
