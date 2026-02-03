@@ -61,9 +61,9 @@ recall_feedback --helpful L1 L3 --incorrect L2
 ## Step 1: Load Context
 
 Read in order:
-- **`epic-guidance.json`** → `linearConfig`, `conventions`, `docs`, `prd`
-- **`progress.txt`** → Codebase Patterns section first
+- **`epic-guidance.json`** → `linearConfig`, `conventions`, `docs`, `prd`, `recallStore`
 - **`AGENTS.md`** → Project-specific patterns
+- **`progress.txt`** → Only if NO `recallStore` in epic-guidance.json (File Mode)
 
 **prd** - Path to PRD file. Read for product vision and feature context.
 
@@ -169,21 +169,25 @@ create_comment: issueId, body="Complete. Files: [...]. Description: [What did yo
 
 ### Recall Mode (if `recallStore` exists):
 
-1. **Record implementation insights:**
-   ```
-   recall_record --content "[what you learned]" --category [CATEGORY] --store [recallStore]
-   ```
+**TWO SEPARATE ACTIONS - do both:**
 
-2. **Provide feedback on patterns you queried:**
-   - Patterns that helped → `recall_feedback --helpful L1 L2`
-   - Patterns that were wrong → `recall_feedback --incorrect L3`
-   - Patterns that didn't apply → `recall_feedback --not-relevant L4`
+**Action A: Record what you learned** (if non-trivial):
+```
+recall_record --content "[what you learned]" --category [CATEGORY] --store [recallStore]
+```
 
-3. **Good insights to record:**
-   - Non-obvious solutions you discovered
-   - Gotchas that would trip up future implementations
-   - Patterns that worked well in this codebase
-   - Library behaviors that weren't in docs
+Ask: "What would have helped me if I knew it before starting?"
+- Non-obvious solution → RECORD
+- Gotcha that slowed you down → RECORD
+- Codebase-specific pattern → RECORD
+- Nothing non-obvious (straightforward fix) → SKIP recording, still do Action B
+
+**Action B: Give feedback on queried patterns** (L1, L2, etc. from Step 4):
+- Pattern helped your implementation → `recall_feedback --helpful L1 L2`
+- Pattern was wrong/misleading → `recall_feedback --incorrect L3`
+- Pattern didn't apply to this task → `recall_feedback --not-relevant L4`
+
+**Important:** "Queried patterns weren't relevant" means use `--not-relevant` feedback. It does NOT mean skip recording your own learnings.
 
 ### File Mode (default):
 
