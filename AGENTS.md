@@ -60,7 +60,7 @@ Two independent agents coordinated through Linear:
 
 Agents auto-detect backend from `epic-guidance.json`:
 - **No `recallStore` field** → File mode (progress.txt)
-- **Has `recallStore` field** → Recall mode (semantic search)
+- **Has `recallStore` field** → Recall mode (keyword search, semantic with Engram)
 
 #### File Mode: progress.txt Structure
 
@@ -119,7 +119,7 @@ cd flowchart && npm run dev
 ### Files as Memory
 - **Knowledge backend** - Learnings and patterns:
   - File mode: `progress.txt` (curated: max 20 patterns, 10 sessions)
-  - Recall mode: SQLite via MCP (unlimited, semantic search)
+  - Recall mode: SQLite via MCP (unlimited, keyword search)
 - `AGENTS.md` - Project-specific patterns for AI tools
 - Git commits - Record of completed work
 - Linear/prd.json - Task status
@@ -215,7 +215,7 @@ parentId: currentEpic.linearId (UUID, not identifier)
 2. Copy `epic-guidance.json.example` to `epic-guidance.json`
 3. Configure `linearConfig.teamId` and `linearConfig.projectId`
 4. Set `currentEpic` with your initial focus
-5. (Optional) Enable Recall for semantic knowledge search:
+5. (Optional) Enable Recall for persistent knowledge search:
    - See `docs/SETUP-RECALL.md` for setup
    - Or use `epic-guidance.recall.json.example` as template
 6. Start both agents in separate terminals

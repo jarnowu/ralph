@@ -53,7 +53,7 @@ recall_feedback --helpful L1 L3 --incorrect L2
 6. Run quality checks (must pass)
 7. Commit
 8. Mark "Done" in Linear
-9. Document learnings in `progress.txt`
+9. Document learnings (see Knowledge Backend section)
 10. Exit
 
 ---

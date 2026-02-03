@@ -66,7 +66,7 @@ A continuous development system where specialized AI agents run independently, c
 - Works with existing Linear epics — Watcher imports rather than duplicates
 - Runs indefinitely — cycles through testing, discovers new work, proposes enhancements
 - **With Recall enabled:**
-  - Agents query only relevant patterns (semantic search vs reading entire file)
+  - Agents query only relevant patterns (keyword search, semantic with Engram)
   - Good patterns gain confidence over time, bad ones fade
   - Share learnings across team members via Engram sync
   - Knowledge persists and improves across projects
@@ -77,7 +77,7 @@ A continuous development system where specialized AI agents run independently, c
 - **Separation of concerns** — Watcher finds and plans, Builders implement
 - **One task per Builder session** — keeps implementation focused
 - **Linear as scalable queue** — avoids JSON bloat, supports 100+ tasks
-- **Pluggable knowledge backend** — start simple with files, upgrade to Recall for semantic search
+- **Pluggable knowledge backend** — start simple with files, upgrade to Recall for persistent search
 
 ---
 

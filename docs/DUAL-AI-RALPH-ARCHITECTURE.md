@@ -387,7 +387,7 @@ ralph/
 - `testing.viewports` - Screen sizes to test (`mobile`=375px, `tablet`=768px, `desktop`=1280px)
 - `conventions` - Rules both agents check against (keep to 10-15 items)
 - `docs` - Either an index file path OR object mapping topics to files
-- `recallStore` - (Optional) Recall store ID to enable semantic knowledge search
+- `recallStore` - (Optional) Recall store ID to enable persistent knowledge search
 - `recallConfig` - (Optional) Recall configuration (sourcePrefix, confidenceThreshold, queryLimit)
 
 **The `prd` field (Product Vision):**

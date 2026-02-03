@@ -1,6 +1,6 @@
 # Setting Up Recall for Ralph Dual Mode
 
-**Optional Enhancement** — Recall provides semantic search, confidence scoring, and team knowledge sharing for Ralph agents. If you prefer simplicity, skip this — `progress.txt` works great out of the box.
+**Optional Enhancement** — Recall provides keyword search (semantic with Engram), confidence scoring, and team knowledge sharing for Ralph agents. If you prefer simplicity, skip this — `progress.txt` works great out of the box.
 
 ---
 
@@ -10,10 +10,12 @@
 |---------|---------------------|-------------|
 | Setup | Zero | One-time global setup |
 | Storage | progress.txt (20 patterns max) | SQLite (unlimited) |
-| Search | Read entire file | Semantic query (top N relevant) |
+| Search | Read entire file | Keyword query (semantic with Engram) |
 | Quality | Manual curation | Confidence scoring + feedback |
 | Team Sharing | None | Engram sync (optional) |
 | Context Usage | Higher (reads all) | Lower (selective queries) |
+
+**Note:** Without Engram, Recall uses keyword-based search. Semantic search (finding conceptually related content) requires Engram configuration. Both modes store and retrieve lore reliably.
 
 ---
 
