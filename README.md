@@ -29,7 +29,9 @@ A continuous development system where specialized AI agents run independently, c
 - **Task states and blockedBy relationships** prevent conflicts when multiple Builders run
 - **Shared config** (`epic-guidance.json`) provides Linear credentials, test credentials, conventions, and docs paths
 - **Process termination** after each session ensures fresh context
-- **Knowledge backend** — File mode (`progress.txt`) by default, or optional [Recall](docs/SETUP-RECALL.md) for semantic search
+- **Knowledge backend** — Pluggable system for cross-session learning:
+  - *File mode* (`progress.txt`) — Zero setup, manual curation, 20 patterns max
+  - *[Recall mode](docs/SETUP-RECALL.md)* — Semantic search, confidence scoring, unlimited patterns, team sync
 
 ### Watcher Phases
 
@@ -63,6 +65,11 @@ A continuous development system where specialized AI agents run independently, c
 - Scale by running multiple Builders against the same queue
 - Works with existing Linear epics — Watcher imports rather than duplicates
 - Runs indefinitely — cycles through testing, discovers new work, proposes enhancements
+- **With Recall enabled:**
+  - Agents query only relevant patterns (semantic search vs reading entire file)
+  - Good patterns gain confidence over time, bad ones fade
+  - Share learnings across team members via Engram sync
+  - Knowledge persists and improves across projects
 
 ### Key Principles
 
@@ -70,6 +77,7 @@ A continuous development system where specialized AI agents run independently, c
 - **Separation of concerns** — Watcher finds and plans, Builders implement
 - **One task per Builder session** — keeps implementation focused
 - **Linear as scalable queue** — avoids JSON bloat, supports 100+ tasks
+- **Pluggable knowledge backend** — start simple with files, upgrade to Recall for semantic search
 
 ---
 
