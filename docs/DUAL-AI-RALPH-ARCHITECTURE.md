@@ -82,7 +82,7 @@ The ONLY way to clear context is to **terminate the process entirely**.
 Files become the only memory:
 - Git history (commits)
 - progress.txt (learnings)
-- prd.json or Linear (task status)
+- Task status (single-agent: `prd.json`, dual-agent: Linear + `watcher-state.json`)
 - AGENTS.md (patterns discovered)
 
 **Iron rule:** One session = one task. If task is too big → context fills → poor code.
@@ -225,9 +225,13 @@ done
 - `Backlog` → Blocked or needs clarification
 
 **Via epic-guidance.json:**
-- Watcher updates with current epic focus
-- Builder reads for implementation context
+- Human configures once (Linear IDs, conventions, docs)
+- Both agents read for context
 - Stays small (< 50 lines)
+
+**Via watcher-state.json:**
+- Watcher updates with current phase, epic, testing progress
+- Builder does not use this file
 
 **Via progress.txt:**
 - Both agents curate (not append-only)
@@ -257,7 +261,47 @@ done
 
 ## File Structure
 
-### Repository Structure
+### Single-Agent vs Dual-Agent Files
+
+Dual-agent mode is a **fork of the original Ralph pattern**. It keeps the core philosophy:
+- Bash loop spawns fresh Claude processes (no context accumulation)
+- Files as memory (git, progress.txt, AGENTS.md)
+- One task per session
+
+But it replaces how tasks are managed:
+- **Original**: `prd.json` (bounded task list, human-defined upfront)
+- **Dual-agent**: Linear + `watcher-state.json` (unlimited tasks, continuously discovered)
+
+And splits one agent into two specialized roles:
+- **Original**: Single agent finds AND fixes problems
+- **Dual-agent**: Watcher finds problems → Builder fixes them
+
+The two modes are **completely separate** - you use one OR the other, never both together.
+
+**Single-Agent Mode** (original Ralph):
+| File | Purpose |
+|------|---------|
+| `ralph.sh` | Bash loop |
+| `prompt.md` / `CLAUDE.md` | Agent prompt |
+| `prd.json` | Task list with `passes: true/false` status |
+| `progress.txt` | Learnings |
+| `AGENTS.md` | Patterns |
+
+**Dual-Agent Mode** (this architecture):
+| File | Purpose |
+|------|---------|
+| `watcher.sh` + `builder.sh` | Bash loops (one per agent) |
+| `watcher.ps1` + `builder.ps1` | PowerShell loops (Windows) |
+| `watcher.md` + `builder.md` | Agent prompts |
+| `watcher-state.json` | Watcher's phases, epics, testing progress |
+| `epic-guidance.json` | Linear config, conventions, docs path |
+| Linear (via MCP) | Task list and status (replaces `prd.json`) |
+| `progress.txt` | Learnings (shared by both agents) |
+| `AGENTS.md` | Patterns (shared by both agents) |
+
+**Key difference:** Single-agent uses `prd.json` for tasks. Dual-agent uses Linear + `watcher-state.json` instead - `prd.json` is not used at all.
+
+### Dual-Agent Repository Structure
 
 ```
 ralph/
@@ -271,10 +315,11 @@ ralph/
 ├── watcher-state.json      # Watcher's phase and testing progress (Watcher only)
 ├── progress.txt            # Learnings (both agents curate)
 ├── AGENTS.md               # Operational patterns
-├── README.md               # Documentation
 ├── *.example               # Templates for JSON files
 └── docs/                   # Architecture documentation
 ```
+
+**Note:** Single-agent files (`ralph.sh`, `prompt.md`, `prd.json`) still exist in the repo for users who prefer bounded task lists. Dual-agent mode is an alternative, not a replacement.
 
 ### State File Separation
 
@@ -321,11 +366,27 @@ ralph/
 ```
 
 **Field reference:**
-- `prd` - Path to PRD file for product vision (Watcher uses to suggest features)
+- `prd` - Path to a PRD **markdown file** (NOT `prd.json`!) - see below
 - `testCredentials` - Login credentials for authenticated testing
 - `testing.viewports` - Screen sizes to test (`mobile`=375px, `tablet`=768px, `desktop`=1280px)
 - `conventions` - Rules both agents check against (keep to 10-15 items)
 - `docs` - Either an index file path OR object mapping topics to files
+
+**The `prd` field (Product Vision):**
+
+This is an **optional** path to a markdown PRD file (e.g., `docs/PRD.md`) that describes your product vision. It is completely unrelated to `prd.json` from single-agent mode.
+
+Purpose:
+- Gives Watcher context about what the product should be
+- Helps Watcher suggest features that align with product goals
+- Helps Watcher prioritize issues based on user impact
+
+The Watcher reads this file during discovery and review phases to understand:
+- What is this product?
+- Who are the target users?
+- What are the planned features and goals?
+
+Without this file, Watcher still works but only finds bugs and issues - it won't proactively suggest features aligned with a product vision.
 
 ### watcher-state.json
 
