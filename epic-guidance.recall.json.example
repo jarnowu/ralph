@@ -1,0 +1,38 @@
+{
+  "linearConfig": {
+    "teamId": "YOUR_TEAM_ID",
+    "projectId": "YOUR_PROJECT_ID",
+    "projectName": "My Project",
+    "defaultLabels": ["ralph-generated"]
+  },
+
+  "globalContext": {
+    "devServerUrl": "http://localhost:3000"
+  },
+
+  "prd": "docs/PRD.md",
+
+  "testCredentials": {
+    "user": { "email": "test@example.com", "password": "testpass123" },
+    "admin": { "email": "admin@example.com", "password": "adminpass123" }
+  },
+
+  "testing": {
+    "viewports": ["mobile", "desktop"]
+  },
+
+  "conventions": [
+    "Example: Use shadcn/ui components from @/components/ui",
+    "Example: Tailwind for styling, no custom CSS",
+    "Example: API routes use tRPC pattern"
+  ],
+
+  "docs": "docs/index.md",
+
+  "recallStore": "ralph/my-project",
+  "recallConfig": {
+    "sourcePrefix": "ralph",
+    "confidenceThreshold": 0.4,
+    "queryLimit": 5
+  }
+}

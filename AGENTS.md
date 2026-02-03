@@ -49,12 +49,20 @@ Two independent agents coordinated through Linear:
 - Linear - Task queue (replaces `prd.json`)
 
 **Shared Resources:**
-- `progress.txt` - Learnings log (see structure below)
 - `epic-guidance.json` - Linear config and project context
 - `watcher-state.json` - Watcher's phase and testing progress
 - Git repository - Code and commit history
+- **Knowledge backend** (one of):
+  - `progress.txt` - File mode (default, zero setup)
+  - Recall MCP - Semantic search mode (optional, see `docs/SETUP-RECALL.md`)
 
-### progress.txt Structure
+### Knowledge Backend
+
+Agents auto-detect backend from `epic-guidance.json`:
+- **No `recallStore` field** → File mode (progress.txt)
+- **Has `recallStore` field** → Recall mode (semantic search)
+
+#### File Mode: progress.txt Structure
 
 ```
 ## Codebase Patterns     ← Curated, max 20 entries
@@ -68,6 +76,17 @@ Two independent agents coordinated through Linear:
 | Watcher | Curates during maintenance: trims old sessions, removes stale patterns |
 
 **Why:** Both agents read this file. Unbounded growth = context waste.
+
+#### Recall Mode (Optional)
+
+Semantic search with confidence scoring. See `docs/SETUP-RECALL.md` for setup.
+
+| Who | Does What |
+|-----|-----------|
+| Builder | `recall_query` before implementing, `recall_record` learnings, `recall_feedback` |
+| Watcher | `recall_query` before testing, `recall_record` edge cases, `recall_feedback` in maintenance |
+
+**Why:** Semantic queries return only relevant patterns vs reading entire file.
 
 ## Commands Reference
 
@@ -90,7 +109,7 @@ cd flowchart && npm run dev
 ### Fresh Context Every Iteration
 - Each iteration spawns a **new AI instance** with clean context
 - Process termination IS the feature (clears accumulated garbage)
-- Memory persists only via: git history, `progress.txt`, Linear/prd.json
+- Memory persists only via: git history, knowledge backend, Linear/prd.json
 
 ### One Task Per Session
 - Single-agent: One PRD story per iteration
@@ -98,7 +117,9 @@ cd flowchart && npm run dev
 - If task is too big, context fills and code quality degrades
 
 ### Files as Memory
-- `progress.txt` - Learnings and patterns (curated: max 20 patterns, 10 sessions)
+- **Knowledge backend** - Learnings and patterns:
+  - File mode: `progress.txt` (curated: max 20 patterns, 10 sessions)
+  - Recall mode: SQLite via MCP (unlimited, semantic search)
 - `AGENTS.md` - Project-specific patterns for AI tools
 - Git commits - Record of completed work
 - Linear/prd.json - Task status
@@ -194,7 +215,10 @@ parentId: currentEpic.linearId (UUID, not identifier)
 2. Copy `epic-guidance.json.example` to `epic-guidance.json`
 3. Configure `linearConfig.teamId` and `linearConfig.projectId`
 4. Set `currentEpic` with your initial focus
-5. Start both agents in separate terminals
+5. (Optional) Enable Recall for semantic knowledge search:
+   - See `docs/SETUP-RECALL.md` for setup
+   - Or use `epic-guidance.recall.json.example` as template
+6. Start both agents in separate terminals
 
 ## Flowchart
 

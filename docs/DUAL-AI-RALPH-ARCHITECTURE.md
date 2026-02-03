@@ -233,10 +233,17 @@ done
 - Watcher updates with current phase, epic, testing progress
 - Builder does not use this file
 
-**Via progress.txt:**
+**Via progress.txt (File Mode - default):**
 - Both agents curate (not append-only)
 - Max 20 Codebase Patterns, max 10 Recent Sessions
 - Keeps context small for future iterations
+
+**Via Recall (optional enhancement):**
+- Semantic search instead of reading entire file
+- Confidence scoring improves pattern quality over time
+- Team sharing via Engram sync
+- Configure by adding `recallStore` to epic-guidance.json
+- See `docs/SETUP-RECALL.md` for setup
 
 ### Required MCP Servers
 
@@ -256,6 +263,12 @@ done
 3. **Context7 MCP** (optional but recommended)
    - Fetch up-to-date API documentation
    - Prevents outdated code patterns
+
+4. **Recall MCP** (optional enhancement)
+   - Semantic knowledge search across sessions
+   - Confidence scoring for pattern quality
+   - Team knowledge sharing via Engram
+   - Setup: See `docs/SETUP-RECALL.md`
 
 ---
 
@@ -305,18 +318,21 @@ The two modes are **completely separate** - you use one OR the other, never both
 
 ```
 ralph/
-├── watcher.md              # Watcher prompt (phase-based workflow)
-├── builder.md              # Builder prompt (one task per session)
-├── watcher.sh              # Watcher bash loop
-├── watcher.ps1             # Watcher PowerShell loop
-├── builder.sh              # Builder bash loop
-├── builder.ps1             # Builder PowerShell loop
-├── epic-guidance.json      # Linear config + project context (both agents read)
-├── watcher-state.json      # Watcher's phase and testing progress (Watcher only)
-├── progress.txt            # Learnings (both agents curate)
-├── AGENTS.md               # Operational patterns
-├── *.example               # Templates for JSON files
-└── docs/                   # Architecture documentation
+├── watcher.md                      # Watcher prompt (phase-based workflow)
+├── builder.md                      # Builder prompt (one task per session)
+├── watcher.sh                      # Watcher bash loop
+├── watcher.ps1                     # Watcher PowerShell loop
+├── builder.sh                      # Builder bash loop
+├── builder.ps1                     # Builder PowerShell loop
+├── epic-guidance.json              # Linear config + project context (both agents read)
+├── epic-guidance.json.example      # Template (file mode - default)
+├── epic-guidance.recall.json.example  # Template (Recall mode - optional)
+├── watcher-state.json              # Watcher's phase and testing progress (Watcher only)
+├── progress.txt                    # Learnings - file mode (both agents curate)
+├── AGENTS.md                       # Operational patterns
+└── docs/
+    ├── DUAL-AI-RALPH-ARCHITECTURE.md  # This document
+    └── SETUP-RECALL.md                # Optional Recall enhancement guide
 ```
 
 **Note:** Single-agent files (`ralph.sh`, `prompt.md`, `prd.json`) still exist in the repo for users who prefer bounded task lists. Dual-agent mode is an alternative, not a replacement.
@@ -371,6 +387,8 @@ ralph/
 - `testing.viewports` - Screen sizes to test (`mobile`=375px, `tablet`=768px, `desktop`=1280px)
 - `conventions` - Rules both agents check against (keep to 10-15 items)
 - `docs` - Either an index file path OR object mapping topics to files
+- `recallStore` - (Optional) Recall store ID to enable semantic knowledge search
+- `recallConfig` - (Optional) Recall configuration (sourcePrefix, confidenceThreshold, queryLimit)
 
 **The `prd` field (Product Vision):**
 
@@ -525,6 +543,7 @@ Unclosed browsers accumulate across sessions → fans spin → memory leak → s
 10. **Coordinate via state** - Linear states, not direct communication
 11. **Close browser every session** - Prevent resource leaks
 12. **Quality gate for tasks** - Accuracy over activity
+13. **Pluggable knowledge backend** - File mode (default) or Recall (optional)
 
 ### Anti-Patterns to Avoid
 

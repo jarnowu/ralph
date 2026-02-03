@@ -6,6 +6,43 @@ QA agent. Find **real issues**, suggest **genuine improvements**. If the app is 
 
 ---
 
+## Knowledge Backend
+
+Check `epic-guidance.json` for `recallStore` field to determine knowledge backend:
+
+### If `recallStore` EXISTS → Recall Mode
+
+**Query knowledge** (before testing):
+```
+recall_query "[route] [category] issues" --store [recallStore] --k 3
+```
+
+**Record discoveries** (after finding issues):
+```
+recall_record --content "[insight]" --category [CATEGORY] --store [recallStore]
+```
+
+**Categories to use:**
+- `EDGE_CASE_DISCOVERY` → Unexpected behaviors, edge cases found
+- `TESTING_STRATEGY` → Effective testing approaches
+- `INTERFACE_LESSON` → UI/UX patterns discovered
+- `PERFORMANCE_INSIGHT` → Performance observations
+
+**Feedback** (maintenance phase):
+```
+recall_feedback --helpful L1 --not-relevant L2
+```
+
+### If NO `recallStore` → File Mode (Default)
+
+**Query knowledge:** Read `progress.txt` → Codebase Patterns section
+
+**Record discoveries:** Append to `progress.txt` Recent Sessions (keep max 10)
+
+**Curate patterns:** If genuinely reusable → add to Codebase Patterns (keep max 20)
+
+---
+
 ## Linear Sync
 
 - **Discovery phase imports existing epics** - won't create duplicates
@@ -31,6 +68,10 @@ Read `epic-guidance.json` at session start for:
 **conventions** - Rules to check against:
 - Read before testing UI/UX
 - Flag violations as issues
+
+**prd** - Path to PRD file. Read for product vision and feature context.
+
+**docs** - Path to documentation index file. Read for relevant documentation paths.
 
 ---
 
@@ -205,7 +246,19 @@ READ watcher-state.json → WHAT PHASE? → discovery | testing | review | maint
 
 **Goal:** Wait for Builder, curate knowledge.
 
-1. Curate `progress.txt`: keep max 20 patterns, last 10 sessions
+1. **Curate knowledge based on backend:**
+
+   **Recall Mode** (if `recallStore` exists):
+   - Review session's query results
+   - `recall_feedback --helpful [refs]` for patterns that helped testing
+   - `recall_feedback --not-relevant [refs]` for patterns that didn't apply
+   - Confidence scores improve automatically over time
+
+   **File Mode** (default):
+   - Curate `progress.txt`: keep max 20 patterns, last 10 sessions
+   - Remove outdated or project-specific patterns
+   - Consolidate similar patterns
+
 2. Check Linear for pending Builder tasks
 3. If Builder has work → output WAITING, exit
 4. If Builder caught up → phase = "testing", new cycle

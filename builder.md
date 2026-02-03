@@ -6,6 +6,43 @@ Developer agent. Each session: implement ONE task from Linear, then exit.
 
 ---
 
+## Knowledge Backend
+
+Check `epic-guidance.json` for `recallStore` field to determine knowledge backend:
+
+### If `recallStore` EXISTS → Recall Mode
+
+**Query before implementing** (Step 4):
+```
+recall_query "[task keywords] [tech area]" --store [recallStore] --k 5
+```
+
+**Record learnings** (Step 9):
+```
+recall_record --content "[insight]" --category [CATEGORY] --store [recallStore]
+```
+
+**Categories to use:**
+- `IMPLEMENTATION_FRICTION` → Gotchas, unexpected blockers
+- `PATTERN_OUTCOME` → What worked/didn't work
+- `DEPENDENCY_BEHAVIOR` → Library quirks, API behaviors
+- `ARCHITECTURAL_DECISION` → Design choices and rationale
+
+**Feedback** (when patterns helped or misled):
+```
+recall_feedback --helpful L1 L3 --incorrect L2
+```
+
+### If NO `recallStore` → File Mode (Default)
+
+**Query before implementing:** Read `progress.txt` → Codebase Patterns section
+
+**Record learnings:** Append to `progress.txt` Recent Sessions
+
+**Curate patterns:** If genuinely reusable → add to Codebase Patterns (keep max 20)
+
+---
+
 ## Session Workflow
 
 1. Load context
@@ -78,10 +115,17 @@ update_issue: id, state="In Progress"
 ## Step 4: Investigate Before Coding
 
 Before writing code:
-1. Read relevant documentation
-2. Search codebase for related code
-3. Check if partially implemented
-4. Read relevant files completely
+
+1. **Query knowledge backend** (see Knowledge Backend section above):
+   - Recall: `recall_query "[task topic] [tech]"` for relevant patterns
+   - File: Read `progress.txt` Codebase Patterns section
+
+2. Read relevant documentation (from `docs` config)
+3. Search codebase for related code
+4. Check if partially implemented
+5. Read relevant files completely
+
+**Use queried patterns** to avoid known pitfalls and follow established approaches.
 
 ---
 
@@ -121,9 +165,31 @@ create_comment: issueId, body="Complete. Files: [...]. Description: [What did yo
 
 ## Step 9: Document Learnings
 
-Update `progress.txt`:
-- Add session to Recent Sessions (keep max 10)
-- If genuinely reusable pattern → add to Codebase Patterns (keep max 20)
+**Based on knowledge backend** (see Knowledge Backend section):
+
+### Recall Mode (if `recallStore` exists):
+
+1. **Record implementation insights:**
+   ```
+   recall_record --content "[what you learned]" --category [CATEGORY] --store [recallStore]
+   ```
+
+2. **Provide feedback on patterns you queried:**
+   - Patterns that helped → `recall_feedback --helpful L1 L2`
+   - Patterns that were wrong → `recall_feedback --incorrect L3`
+   - Patterns that didn't apply → `recall_feedback --not-relevant L4`
+
+3. **Good insights to record:**
+   - Non-obvious solutions you discovered
+   - Gotchas that would trip up future implementations
+   - Patterns that worked well in this codebase
+   - Library behaviors that weren't in docs
+
+### File Mode (default):
+
+1. Add session to `progress.txt` Recent Sessions (keep max 10)
+2. If genuinely reusable pattern → add to Codebase Patterns (keep max 20)
+3. Format: `- [CATEGORY] Topic: Insight`
 
 ---
 
