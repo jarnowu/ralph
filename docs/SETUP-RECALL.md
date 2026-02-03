@@ -1,88 +1,182 @@
 # Setting Up Recall for Ralph Dual Mode
 
-**Optional Enhancement** — Recall provides keyword search (semantic with Engram), confidence scoring, and team knowledge sharing for Ralph agents. If you prefer simplicity, skip this — `progress.txt` works great out of the box.
+**Optional Enhancement** — Recall provides semantic search, confidence scoring, and team knowledge sharing for Ralph agents. If you prefer simplicity, skip this — `progress.txt` works great out of the box.
+
+**Important:** Recall requires Engram (a backend service) for search functionality. Without Engram, Recall can only store data but cannot query it. This guide covers both.
 
 ---
 
 ## What You Get
 
-| Feature | File Mode (Default) | Recall Mode |
-|---------|---------------------|-------------|
-| Setup | Zero | One-time global setup |
+| Feature | File Mode (Default) | Recall + Engram |
+|---------|---------------------|-----------------|
+| Setup | Zero | Engram + Recall setup |
 | Storage | progress.txt (20 patterns max) | SQLite (unlimited) |
-| Search | Read entire file | Keyword query (semantic with Engram) |
+| Search | Read entire file | Semantic search via embeddings |
 | Quality | Manual curation | Confidence scoring + feedback |
-| Team Sharing | None | Engram sync (optional) |
+| Team Sharing | None | Cross-machine sync |
 | Context Usage | Higher (reads all) | Lower (selective queries) |
-
-**Note:** Without Engram, Recall uses keyword-based search. Semantic search (finding conceptually related content) requires Engram configuration. Both modes store and retrieve lore reliably.
 
 ---
 
 ## When to Use Recall
 
-**Use Recall if:**
+**Use Recall + Engram if:**
 - Long-running project (weeks/months)
 - Team working on same codebase
 - Expect 50+ patterns to accumulate
-- Want cross-project knowledge sharing
+- Want semantic search (find conceptually related patterns)
+- Have OpenAI API access (required for embeddings)
 
 **Stick with File Mode if:**
 - Quick project (days)
 - Solo developer
 - Want zero setup
+- Don't have OpenAI API key
 - Patterns stay under 50
 
 ---
 
-## One-Time Global Setup
+## Architecture Overview
 
-You only do this once per machine. Recall then works for all Ralph projects.
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  Claude Agent   │────▶│     Recall      │────▶│     Engram      │
+│  (via MCP)      │     │  (local client) │     │ (backend server)│
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+                              │                        │
+                              │                        ▼
+                              │                 ┌─────────────────┐
+                              │                 │   OpenAI API    │
+                              │                 │  (embeddings)   │
+                              ▼                 └─────────────────┘
+                        ┌─────────────────┐
+                        │  Local SQLite   │
+                        │    (cache)      │
+                        └─────────────────┘
+```
 
-### Step 1: Install Recall
+- **Recall** — Local client that agents interact with via MCP
+- **Engram** — Backend server that handles semantic search using OpenAI embeddings
+- **Local SQLite** — Cache for offline access and sync
 
-#### Option A: npm (All Platforms - Recommended)
+---
 
-Requires Node.js 18+. Always gets the latest version.
+## Step 1: Set Up Engram (Backend Server)
+
+Engram is required for Recall's query functionality.
+
+### Prerequisites
+
+- Docker installed
+- OpenAI API key (for embeddings)
+
+### Option A: Docker (Recommended)
+
+```bash
+# Create a directory for Engram data
+mkdir -p ~/engram-data
+
+# Run Engram
+docker run -d \
+  --name engram \
+  -p 8080:8080 \
+  -e OPENAI_API_KEY="sk-your-openai-api-key" \
+  -e ENGRAM_API_KEY="your-secret-key-make-one-up" \
+  -v ~/engram-data:/data \
+  ghcr.io/hyperengineering/engram:latest
+```
+
+**Windows (PowerShell):**
+```powershell
+# Create directory
+mkdir $env:USERPROFILE\engram-data
+
+# Run Engram
+docker run -d `
+  --name engram `
+  -p 8080:8080 `
+  -e OPENAI_API_KEY="sk-your-openai-api-key" `
+  -e ENGRAM_API_KEY="your-secret-key-make-one-up" `
+  -v $env:USERPROFILE\engram-data:/data `
+  ghcr.io/hyperengineering/engram:latest
+```
+
+**Environment variables:**
+| Variable | Description |
+|----------|-------------|
+| `OPENAI_API_KEY` | Your OpenAI API key (required for embeddings) |
+| `ENGRAM_API_KEY` | A secret you create for client authentication |
+
+### Option B: Homebrew (macOS/Linux)
+
+```bash
+# Install
+brew install hyperengineering/tap/engram
+
+# Set environment variables
+export OPENAI_API_KEY="sk-your-openai-api-key"
+export ENGRAM_API_KEY="your-secret-key-make-one-up"
+
+# Run
+engram
+```
+
+### Verify Engram is Running
+
+```bash
+curl http://localhost:8080/api/v1/health
+```
+
+Should return: `{"status":"ok"}`
+
+---
+
+## Step 2: Install Recall (Client)
+
+### Option A: npm (All Platforms - Recommended)
+
+Requires Node.js 18+.
 
 ```bash
 npm install -g @hyperengineering/recall
 ```
 
-Verify:
-```bash
-recall version
-```
-
-#### Option B: Homebrew (macOS/Linux)
+### Option B: Homebrew (macOS/Linux)
 
 ```bash
 brew install hyperengineering/tap/recall
 ```
 
-#### Verify Installation
+### Verify Installation
 
 ```bash
 recall version
 ```
 
-### Step 2: Add Recall MCP Server
+---
 
-Add to your Claude Code MCP configuration.
+## Step 3: Configure Recall MCP Server
 
-#### Option A: One-liner (Recommended)
+Add Recall to Claude Code with Engram connection.
 
+### Option A: One-liner
+
+**macOS/Linux:**
 ```bash
-claude mcp add-json recall '{"type":"stdio","command":"recall","args":["mcp"],"env":{"RECALL_DEBUG":"false"}}' --scope user
+claude mcp add-json recall '{"type":"stdio","command":"recall","args":["mcp"],"env":{"ENGRAM_URL":"http://localhost:8080","ENGRAM_API_KEY":"your-secret-key-make-one-up"}}' --scope user
 ```
 
-#### Option B: Manual Configuration
+**Windows (PowerShell):**
+```powershell
+claude mcp add-json recall '{\"type\":\"stdio\",\"command\":\"recall\",\"args\":[\"mcp\"],\"env\":{\"ENGRAM_URL\":\"http://localhost:8080\",\"ENGRAM_API_KEY\":\"your-secret-key-make-one-up\"}}' --scope user
+```
 
-**Find your settings file:**
+### Option B: Manual Configuration
+
+Edit your Claude Code settings file:
 - macOS/Linux: `~/.claude/settings.json`
 - Windows: `C:\Users\<YourUsername>\.claude\settings.json`
-
-**Add the recall server:**
 
 ```json
 {
@@ -91,26 +185,24 @@ claude mcp add-json recall '{"type":"stdio","command":"recall","args":["mcp"],"e
       "command": "recall",
       "args": ["mcp"],
       "env": {
-        "RECALL_DEBUG": "false"
+        "ENGRAM_URL": "http://localhost:8080",
+        "ENGRAM_API_KEY": "your-secret-key-make-one-up"
       }
     }
   }
 }
 ```
 
-**If `recall` isn't found**, use the full path:
-
+**Windows — if `recall` isn't found**, use full path:
 ```json
-// npm global install (most common)
 "command": "C:\\Users\\<YourUsername>\\AppData\\Roaming\\npm\\recall.cmd"
-
-// Or manual install location
-"command": "C:\\Program Files\\recall\\recall.exe"
 ```
 
-**Restart Claude Code** completely (not just reload) to load the MCP server.
+### Restart Claude Code
 
-### Step 3: Verify MCP Connection
+Completely restart Claude Code (not just reload) to load the MCP server.
+
+### Verify MCP Connection
 
 In Claude Code:
 ```
@@ -127,11 +219,11 @@ You should see `recall` listed with tools:
 
 ---
 
-## Per-Project Setup
+## Step 4: Per-Project Setup
 
 For each Ralph project that wants Recall:
 
-### Step 1: Create Project Store
+### Create Project Store
 
 ```bash
 recall store create ralph/my-project --description "Knowledge base for My Project"
@@ -143,7 +235,7 @@ ralph/[project-name]           # Project-specific
 ralph/[org]/[project-name]     # Team/org scoped
 ```
 
-### Step 2: Configure epic-guidance.json
+### Configure epic-guidance.json
 
 Add the `recallStore` field:
 
@@ -163,16 +255,7 @@ Add the `recallStore` field:
 }
 ```
 
-**Configuration options:**
-
-| Field | Default | Description |
-|-------|---------|-------------|
-| `recallStore` | (none) | Store ID. If omitted, uses file mode. |
-| `recallConfig.sourcePrefix` | `"ralph"` | Prefix for source IDs (e.g., `ralph-watcher`) |
-| `recallConfig.confidenceThreshold` | `0.4` | Min confidence for query results |
-| `recallConfig.queryLimit` | `5` | Max results per query |
-
-### Step 3: Run the Loops
+### Run the Loops
 
 No changes needed — agents auto-detect Recall mode from config:
 
@@ -232,8 +315,6 @@ recall_feedback --helpful L1 --not-relevant L2 L3
 
 ## Category Reference
 
-Use these Recall categories for different insight types:
-
 | Category | Agent | Use For |
 |----------|-------|---------|
 | `EDGE_CASE_DISCOVERY` | Watcher | Unexpected behaviors, corner cases |
@@ -261,142 +342,128 @@ Recall tracks pattern quality automatically:
 Over time:
 - Good patterns rise to 0.7-1.0
 - Bad patterns sink below threshold
-- Irrelevant patterns stay neutral (context mismatch, not quality issue)
-
-**Query with threshold:**
-```
-recall_query "topic" --confidence 0.6 --store ralph/my-project
-```
+- Irrelevant patterns stay neutral
 
 ---
 
-## Multi-Agent Future-Proofing
+## Managing Engram
 
-The store structure supports adding more agents later:
-
-```
-ralph/my-project          # All agents share this store
-```
-
-Source IDs distinguish contributors:
-```
-RECALL_SOURCE_ID=ralph-watcher
-RECALL_SOURCE_ID=ralph-builder
-RECALL_SOURCE_ID=ralph-reviewer    # Future agent
-RECALL_SOURCE_ID=ralph-security    # Future agent
-```
-
-**Feedback discipline:** Only rate patterns you actually tried to use:
-- ✅ Builder marks implementation pattern helpful after using it
-- ❌ Builder marks testing pattern not-relevant (wrong — just don't rate it)
-
----
-
-## Optional: Team Sharing with Engram
-
-Share knowledge across team members or machines.
-
-### Setup Engram
-
-1. Get Engram credentials from your team admin (or self-host)
-2. Set environment variables:
+### Start/Stop (Docker)
 
 ```bash
-export ENGRAM_URL="https://engram.yourteam.com"
-export ENGRAM_API_KEY="your-api-key"
+# Stop
+docker stop engram
+
+# Start
+docker start engram
+
+# View logs
+docker logs engram
+
+# Remove completely
+docker rm -f engram
 ```
 
-Or add to MCP config:
+### Run on Startup
 
+```bash
+# Add restart policy
+docker update --restart unless-stopped engram
+```
+
+### Remote/Team Engram
+
+For team sharing, deploy Engram on a server accessible to all team members:
+
+```bash
+docker run -d \
+  --name engram \
+  -p 8080:8080 \
+  -e OPENAI_API_KEY="sk-team-openai-key" \
+  -e ENGRAM_API_KEY="team-shared-secret" \
+  -v /var/engram-data:/data \
+  ghcr.io/hyperengineering/engram:latest
+```
+
+Then configure team members' Recall:
 ```json
 {
-  "mcpServers": {
-    "recall": {
-      "command": "recall",
-      "args": ["mcp"],
-      "env": {
-        "ENGRAM_URL": "https://engram.yourteam.com",
-        "ENGRAM_API_KEY": "your-api-key"
-      }
-    }
+  "env": {
+    "ENGRAM_URL": "http://your-server:8080",
+    "ENGRAM_API_KEY": "team-shared-secret"
   }
 }
-```
-
-### Sync Commands
-
-```bash
-# Pull team knowledge
-recall sync --direction pull --store ralph/my-project
-
-# Push your discoveries
-recall sync --direction push --store ralph/my-project
-
-# Bidirectional sync
-recall sync --store ralph/my-project
-```
-
-Agents can also sync via MCP:
-```
-recall_sync --direction both --store ralph/my-project
 ```
 
 ---
 
 ## Troubleshooting
 
-### "recall: command not found" / "not recognized"
+### "Recall is in offline mode" / Queries return empty
 
-**If installed via npm:**
+**Cause:** Recall can't connect to Engram.
+
+**Fix:**
+1. Check Engram is running: `curl http://localhost:8080/api/v1/health`
+2. Check `ENGRAM_URL` in MCP config matches where Engram runs
+3. Check `ENGRAM_API_KEY` matches between Recall and Engram
+4. Restart Claude Code after config changes
+
+### "recall: command not found"
+
 ```bash
-# Check npm global bin location
+# Check npm global bin
 npm bin -g
 
-# Verify recall is there
+# Verify installation
 npm list -g @hyperengineering/recall
 
-# Reinstall if needed
+# Reinstall
 npm install -g @hyperengineering/recall
 ```
 
-**Windows (manual install):**
-```powershell
-# Check if recall is in PATH
-where.exe recall
+### Engram container won't start
 
-# If not found, verify it exists and add to PATH
-```
-
-**macOS/Linux:**
 ```bash
-# Check installation
-which recall
+# Check logs
+docker logs engram
 
-# If using Homebrew
-brew list recall
+# Common issues:
+# - OPENAI_API_KEY not set or invalid
+# - Port 8080 already in use (change with -p 8081:8080)
 ```
 
 ### MCP Server Not Loading
 
 1. Check settings.json syntax (valid JSON?)
 2. Restart Claude Code completely
-3. Check `/mcp` output for errors
+3. Run `/mcp` and check for errors
 
-### Queries Return Empty
+---
 
-- Store might be empty (normal for new projects)
-- Confidence threshold too high (try `--confidence 0.3`)
-- Check store name matches config
+## Quick Reference
 
-### High Memory Usage
-
-SQLite databases stay small. If memory issues:
 ```bash
-# Check database size
-ls -lh ~/.recall/stores/*/lore.db
+# Engram (Docker)
+docker run -d --name engram -p 8080:8080 \
+  -e OPENAI_API_KEY="sk-..." -e ENGRAM_API_KEY="secret" \
+  -v ~/engram-data:/data ghcr.io/hyperengineering/engram:latest
 
-# Vacuum if needed
-recall store vacuum ralph/my-project
+# Recall client
+npm install -g @hyperengineering/recall
+recall version
+
+# Create store
+recall store create ralph/my-project
+
+# Test query
+recall query "test" --store ralph/my-project
+
+# Test record
+recall record --content "Test" --category PATTERN_OUTCOME --store ralph/my-project
+
+# Check Engram health
+curl http://localhost:8080/api/v1/health
 ```
 
 ---
@@ -405,44 +472,22 @@ recall store vacuum ralph/my-project
 
 ### File → Recall
 
-1. Set up Recall (this guide)
-2. Add `recallStore` to epic-guidance.json
-3. Optionally import existing patterns:
-   ```bash
-   # Manual: read progress.txt, record key patterns to Recall
-   ```
+1. Set up Engram (this guide)
+2. Install Recall client
+3. Configure MCP with Engram connection
+4. Add `recallStore` to epic-guidance.json
 
 ### Recall → File
 
 1. Remove `recallStore` from epic-guidance.json
 2. Agents automatically use progress.txt
 3. Recall data persists (can switch back anytime)
+4. Engram can be stopped if not needed
 
 ---
-
-## Quick Reference
-
-```bash
-# Create store
-recall store create ralph/my-project
-
-# Check store stats
-recall store info ralph/my-project
-
-# Manual query (testing)
-recall query "authentication" --store ralph/my-project
-
-# Manual record (testing)
-recall record --content "Test insight" --category PATTERN_OUTCOME --store ralph/my-project
-
-# List all stores
-recall store list
-```
 
 **Config template:** See `epic-guidance.recall.json.example`
 
-**Latest release:** https://github.com/hyperengineering/recall/releases/latest
-
----
-
-*For more details, see the [Recall documentation](https://github.com/hyperengineering/recall).*
+**Repositories:**
+- Recall: https://github.com/hyperengineering/recall
+- Engram: https://github.com/hyperengineering/engram
