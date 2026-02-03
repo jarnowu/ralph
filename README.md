@@ -10,6 +10,69 @@ Ralph is an autonomous AI agent loop that runs AI coding tools ([Claude Code](ht
 
 Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 
+---
+
+## Dual-Agent Mode: Autonomous Development
+
+A continuous development system where specialized AI agents run independently, coordinating through a task queue to discover issues, plan enhancements, and implement fixes indefinitely.
+
+### The Agents
+
+| Agent | Role |
+|-------|------|
+| **Watcher** | QA and planning agent that tests the running application, identifies real issues, and proposes new features and improvements |
+| **Builder(s)** | Developer agent(s) that pick unblocked tasks, implement them, run quality checks, commit, and mark complete |
+
+### How They Coordinate
+
+- **Linear serves as the task queue** — Watcher creates tasks under epics, Builders consume them
+- **Task states and blockedBy relationships** prevent conflicts when multiple Builders run
+- **Shared config** (`epic-guidance.json`) provides Linear credentials, test credentials, conventions, and docs paths
+- **Process termination** after each session ensures fresh context
+- **Knowledge backend** — File mode (`progress.txt`) by default, or optional [Recall](docs/SETUP-RECALL.md) for semantic search
+
+### Watcher Phases
+
+1. **Discovery** — Explores the app (or reads a PRD), creates or imports epics with routes
+2. **Testing** — Tests one route + one category per session (functional, errors, UX, performance, accessibility) across configured viewports
+3. **Review** — Epic complete; checks for new epics, decides next epic or starts new cycle
+4. **Maintenance** — App is healthy; waits for Builders to catch up, curates learnings
+
+### Watcher Capabilities
+
+- **Bug detection** — Console errors, broken functionality, error handling gaps
+- **UX/UI issues** — Usability problems, accessibility violations, responsive breakages
+- **Feature planning** — Proposes new features aligned with PRD vision
+- **Improvements** — Suggests enhancements like caching, better loading states, performance optimizations
+
+### Builder Workflow
+
+1. Query Linear for highest-priority unblocked task (two-stage query to minimize context)
+2. Mark "In Progress" → Investigate → Implement → Quality checks must pass → Commit
+3. Mark "Done" with comment → Document learnings → Exit
+
+### Quality Gates
+
+- **Watcher**: "Is this REAL? Would users NOTICE and CARE? Worth Builder's time?" — accuracy over activity
+- **Builder**: Tests must pass before committing — no broken code enters the repo
+
+### What You Can Accomplish
+
+- Point at a running application and let it continuously improve
+- Provide a PRD for product vision — Watcher uses it to plan features, not just find bugs
+- Scale by running multiple Builders against the same queue
+- Works with existing Linear epics — Watcher imports rather than duplicates
+- Runs indefinitely — cycles through testing, discovers new work, proposes enhancements
+
+### Key Principles
+
+- **Fresh context every session** — process terminates, files are the only memory
+- **Separation of concerns** — Watcher finds and plans, Builders implement
+- **One task per Builder session** — keeps implementation focused
+- **Linear as scalable queue** — avoids JSON bloat, supports 100+ tasks
+
+---
+
 [Read my in-depth article on how I use Ralph](https://x.com/ryancarson/status/2008548371712135632)
 
 ## Prerequisites
