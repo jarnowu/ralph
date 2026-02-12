@@ -1,7 +1,7 @@
 #!/bin/bash
 # Builder Loop - Implement Linear tasks
 # Each iteration implements ONE task, then exits
-# Usage: ./builder.sh [--sleep seconds] [--max iterations] [--project name]
+# Usage: ./ralph-dual/builder.sh [--sleep seconds] [--max iterations] [--project name]
 
 set -e
 
@@ -53,7 +53,7 @@ while [[ $# -gt 0 ]]; do
       echo "  --project <name>     Override Linear project"
       echo "  --help               Show this help"
       echo ""
-      echo "Required files:"
+      echo "Required files (in ralph-dual/):"
       echo "  epic-guidance.json   - Linear config and project context"
       echo "  progress.txt         - Learnings (auto-created)"
       echo ""
@@ -82,9 +82,9 @@ if [ ! -f "$BUILDER_PROMPT" ]; then
 fi
 
 if [ ! -f "$GUIDANCE_FILE" ]; then
-  echo "Error: epic-guidance.json not found"
+  echo "Error: epic-guidance.json not found in $SCRIPT_DIR"
   echo "Run Watcher first or create from template:"
-  echo "  cp epic-guidance.json.example epic-guidance.json"
+  echo "  cp ralph-dual/epic-guidance.json.example ralph-dual/epic-guidance.json"
   exit 1
 fi
 

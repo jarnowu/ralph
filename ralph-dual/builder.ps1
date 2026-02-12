@@ -1,5 +1,5 @@
 # Builder Loop - Implement Linear tasks
-# Usage: .\builder.ps1 [-Sleep 5] [-Max 0] [-Project "name"]
+# Usage: .\ralph-dual\builder.ps1 [-Sleep 5] [-Max 0] [-Project "name"]
 
 param(
     [int]$Sleep = 5,
@@ -24,7 +24,7 @@ if (-not (Test-Path $BuilderPrompt)) {
 if (-not (Test-Path $GuidanceFile)) {
     Write-Host "Error: epic-guidance.json not found" -ForegroundColor Red
     Write-Host "Run Watcher first or create from template:"
-    Write-Host "  cp epic-guidance.json.example epic-guidance.json"
+    Write-Host "  cp ralph-dual/epic-guidance.json.example ralph-dual/epic-guidance.json"
     exit 1
 }
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 # Watcher Loop - Test app and create Linear tasks for REAL issues
 # Each session: one phase action, then exit
-# Usage: ./watcher.sh [--sleep seconds] [--max iterations] [--project name]
+# Usage: ./ralph-dual/watcher.sh [--sleep seconds] [--max iterations] [--project name]
 
 set -e
 

@@ -1,5 +1,5 @@
 # Watcher Loop - Test app and create Linear tasks for REAL issues
-# Usage: .\watcher.ps1 [-Sleep 30] [-Max 0] [-Project "name"]
+# Usage: .\ralph-dual\watcher.ps1 [-Sleep 30] [-Max 0] [-Project "name"]
 
 param(
     [int]$Sleep = 30,
