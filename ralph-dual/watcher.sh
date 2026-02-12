@@ -44,7 +44,7 @@ while [[ $# -gt 0 ]]; do
       echo "Finds REAL issues and suggests GENUINE improvements."
       echo "Does NOT manufacture problems."
       echo ""
-      echo "Usage: ./watcher.sh [options]"
+      echo "Usage: ./ralph-dual/watcher.sh [options]"
       echo ""
       echo "Options:"
       echo "  --sleep <seconds>    Sleep between sessions (default: 30)"
@@ -124,8 +124,11 @@ while :; do
   echo ""
   echo "=== Session $iteration [$CURRENT_PHASE] - $(date) ==="
 
-  # Prepare prompt
+  # Prepare prompt with directory-aware path substitution
   PROMPT_CONTENT=$(cat "$WATCHER_PROMPT")
+  RALPH_DIR="${SCRIPT_DIR#$(pwd)/}"
+  [ "$RALPH_DIR" = "$SCRIPT_DIR" ] && RALPH_DIR=$(realpath --relative-to="$(pwd)" "$SCRIPT_DIR" 2>/dev/null || basename "$SCRIPT_DIR")
+  PROMPT_CONTENT="${PROMPT_CONTENT//\{RALPH_DIR\}/$RALPH_DIR}"
   if [ -n "$PROJECT_OVERRIDE" ]; then
     PROMPT_CONTENT="**PROJECT**: Use Linear project '$PROJECT_OVERRIDE'
 

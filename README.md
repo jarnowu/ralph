@@ -20,17 +20,17 @@ A continuous development system where specialized AI agents run independently, c
 
 | Agent | Role |
 |-------|------|
-| **Watcher** | QA and planning agent that tests the running application, identifies real issues, and proposes new features and improvements |
-| **Builder(s)** | Developer agent(s) that pick unblocked tasks, implement them, run quality checks, commit, and mark complete |
+| **Watcher** | QA and planning agent that tests the running application, identifies real issues, and proposes new features and improvements (`ralph-dual/watcher.sh`) |
+| **Builder(s)** | Developer agent(s) that pick unblocked tasks, implement them, run quality checks, commit, and mark complete (`ralph-dual/builder.sh`) |
 
 ### How They Coordinate
 
 - **Linear serves as the task queue** — Watcher creates tasks under epics, Builders consume them
 - **Task states and blockedBy relationships** prevent conflicts when multiple Builders run
-- **Shared config** (`epic-guidance.json`) provides Linear credentials, test credentials, conventions, and docs paths
+- **Shared config** (`ralph-dual/epic-guidance.json`) provides Linear credentials, test credentials, conventions, and docs paths
 - **Process termination** after each session ensures fresh context
 - **Knowledge backend** — Pluggable system for cross-session learning:
-  - *File mode* (`progress.txt`) — Zero setup, manual curation, 20 patterns max
+  - *File mode* (`ralph-dual/progress.txt`) — Zero setup, manual curation, 20 patterns max
   - *[Recall mode](docs/SETUP-RECALL.md)* — Semantic search, confidence scoring, unlimited patterns, team sync
 
 ### Watcher Phases
@@ -353,7 +353,7 @@ NOTHING to improve   → Report "CLEAN" → That's success
   - Domain: `Frontend` | `Backend` | `Security`
   - Type: `Bug` | `Feature` | `Improvement`
 
-**Configuration options in `epic-guidance.json`:**
+**Configuration options in `ralph-dual/epic-guidance.json`:**
 
 | Field | Purpose |
 |-------|---------|
@@ -367,21 +367,21 @@ NOTHING to improve   → Report "CLEAN" → That's success
 
 | Agent | Script | Role |
 |-------|--------|------|
-| **Watcher** | `watcher.sh` | Tests app, finds bugs/issues, creates Linear tasks |
-| **Builder** | `builder.sh` | Implements ONE Linear task per iteration |
+| **Watcher** | `ralph-dual/watcher.sh` | Tests app, finds bugs/issues, creates Linear tasks |
+| **Builder** | `ralph-dual/builder.sh` | Implements ONE Linear task per iteration |
 
 Both share:
 - Linear (task queue via MCP)
-- `epic-guidance.json` (lightweight context)
-- `progress.txt` (learnings log)
+- `ralph-dual/epic-guidance.json` (lightweight context)
+- `ralph-dual/progress.txt` (learnings log)
 - Git repository
 
 ### Setup
 
 1. **Configure Linear and project context:**
    ```bash
-   cp epic-guidance.json.example epic-guidance.json
-   # Edit epic-guidance.json:
+   cp ralph-dual/epic-guidance.json.example ralph-dual/epic-guidance.json
+   # Edit ralph-dual/epic-guidance.json:
    # - Set linearConfig.teamId and projectId
    # - Set globalContext.devServerUrl
    # - Set testCredentials for authenticated testing (optional)
@@ -389,7 +389,7 @@ Both share:
 
 2. **Initialize Watcher state:**
    ```bash
-   cp watcher-state.json.example watcher-state.json
+   cp ralph-dual/watcher-state.json.example ralph-dual/watcher-state.json
    # Starts in "discovery" phase
    # First Watcher session will explore app and create epics
    # No manual route configuration needed
@@ -398,26 +398,26 @@ Both share:
 3. **Start both agents:**
    ```bash
    # Terminal 1: Watcher (tests app, creates tasks)
-   ./watcher.sh --project "My Project"
+   ./ralph-dual/watcher.sh --project "My Project"
 
    # Terminal 2: Builder (implements tasks)
-   ./builder.sh --project "My Project"
+   ./ralph-dual/builder.sh --project "My Project"
    ```
 
 ### Agent Scripts
 
 ```bash
 # Watcher options
-./watcher.sh                      # Use config from epic-guidance.json
-./watcher.sh --sleep 120          # Test every 2 minutes
-./watcher.sh --project "App"      # Override Linear project
-./watcher.sh --max 100            # Run max 100 iterations
+./ralph-dual/watcher.sh                      # Use config from ralph-dual/epic-guidance.json
+./ralph-dual/watcher.sh --sleep 120          # Test every 2 minutes
+./ralph-dual/watcher.sh --project "App"      # Override Linear project
+./ralph-dual/watcher.sh --max 100            # Run max 100 iterations
 
 # Builder options
-./builder.sh                      # Use config from epic-guidance.json
-./builder.sh --sleep 10           # Check for tasks every 10s
-./builder.sh --project "App"      # Override Linear project
-./builder.sh --max 50             # Run max 50 iterations
+./ralph-dual/builder.sh                      # Use config from ralph-dual/epic-guidance.json
+./ralph-dual/builder.sh --sleep 10           # Check for tasks every 10s
+./ralph-dual/builder.sh --project "App"      # Override Linear project
+./ralph-dual/builder.sh --max 50             # Run max 50 iterations
 ```
 
 ### The Feedback Loop
@@ -449,22 +449,22 @@ BUILDER (parallel):
 
 | File | Purpose |
 |------|---------|
-| `watcher.sh` | Bash loop for Watcher agent |
-| `builder.sh` | Bash loop for Builder agent |
-| `watcher.md` | Watcher agent prompt (one route+category per session) |
-| `builder.md` | Builder agent prompt (one task per session) |
-| `epic-guidance.json` | Linear config and project context (gitignored) |
-| `watcher-state.json` | Watcher's testing progress and coverage (gitignored) |
-| `*.example` | Templates to copy and configure |
+| `ralph-dual/watcher.sh` | Bash loop for Watcher agent |
+| `ralph-dual/builder.sh` | Bash loop for Builder agent |
+| `ralph-dual/watcher.md` | Watcher agent prompt (one route+category per session) |
+| `ralph-dual/builder.md` | Builder agent prompt (one task per session) |
+| `ralph-dual/epic-guidance.json` | Linear config and project context (gitignored) |
+| `ralph-dual/watcher-state.json` | Watcher's testing progress and coverage (gitignored) |
+| `ralph-dual/*.example` | Templates to copy and configure |
 
 ### Switching Projects
 
 ```bash
 # Option 1: CLI flag
-./watcher.sh --project "New Project"
-./builder.sh --project "New Project"
+./ralph-dual/watcher.sh --project "New Project"
+./ralph-dual/builder.sh --project "New Project"
 
-# Option 2: Edit epic-guidance.json
+# Option 2: Edit ralph-dual/epic-guidance.json
 # Change linearConfig.projectId and linearConfig.projectName
 ```
 
@@ -484,9 +484,9 @@ BUILDER (parallel):
 | Problem | Solution |
 |---------|----------|
 | `Linear MCP not found` | Run `/mcp add linear` in Claude Code and authenticate. |
-| Tasks not appearing in project | Ensure `project` and `parentId` are set in task creation. Check `epic-guidance.json` has correct IDs. |
-| Watcher creates too many tasks | Quality gate not working - check `watcher.md` is being read. Reset `watcher-state.json` to discovery phase. |
-| Builder picks blocked tasks | Verify `blockedBy` field is being checked. Update to latest `builder.md`. |
+| Tasks not appearing in project | Ensure `project` and `parentId` are set in task creation. Check `ralph-dual/epic-guidance.json` has correct IDs. |
+| Watcher creates too many tasks | Quality gate not working - check `ralph-dual/watcher.md` is being read. Reset `ralph-dual/watcher-state.json` to discovery phase. |
+| Builder picks blocked tasks | Verify `blockedBy` field is being checked. Update to latest `ralph-dual/builder.md`. |
 | Browser not closing | Playwright MCP issue - manually close browser. Check Watcher exits cleanly. |
 | "NO_TASKS" but tasks exist | Check Linear project ID matches. Verify task state is "unstarted" not "backlog". |
 

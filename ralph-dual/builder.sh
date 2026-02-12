@@ -45,7 +45,7 @@ while [[ $# -gt 0 ]]; do
       echo "commits the changes, then exits."
       echo "The bash loop provides continuity across sessions."
       echo ""
-      echo "Usage: ./builder.sh [options]"
+      echo "Usage: ./ralph-dual/builder.sh [options]"
       echo ""
       echo "Options:"
       echo "  --sleep <seconds>    Sleep between iterations (default: 5)"
@@ -58,7 +58,7 @@ while [[ $# -gt 0 ]]; do
       echo "  progress.txt         - Learnings (auto-created)"
       echo ""
       echo "Example:"
-      echo "  ./builder.sh --sleep 10 --project 'My App'"
+      echo "  ./ralph-dual/builder.sh --sleep 10 --project 'My App'"
       exit 0
       ;;
     *)
@@ -132,8 +132,11 @@ while :; do
   echo ""
   echo "=== Builder Session $iteration - $(date) ==="
 
-  # Prepare prompt
+  # Prepare prompt with directory-aware path substitution
   PROMPT_CONTENT=$(cat "$BUILDER_PROMPT")
+  RALPH_DIR="${SCRIPT_DIR#$(pwd)/}"
+  [ "$RALPH_DIR" = "$SCRIPT_DIR" ] && RALPH_DIR=$(realpath --relative-to="$(pwd)" "$SCRIPT_DIR" 2>/dev/null || basename "$SCRIPT_DIR")
+  PROMPT_CONTENT="${PROMPT_CONTENT//\{RALPH_DIR\}/$RALPH_DIR}"
   if [ -n "$PROJECT_OVERRIDE" ]; then
     PROMPT_CONTENT="**PROJECT**: Use Linear project '$PROJECT_OVERRIDE'
 

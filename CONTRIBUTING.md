@@ -55,8 +55,8 @@ Before opening an issue:
 ./ralph.sh --tool claude 3
 
 # Dual-agent mode (requires Linear setup)
-./watcher.sh --max 3
-./builder.sh --max 3
+./ralph-dual/watcher.sh --max 3
+./ralph-dual/builder.sh --max 3
 ```
 
 ### Commit Messages

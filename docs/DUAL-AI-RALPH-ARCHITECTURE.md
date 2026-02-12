@@ -82,7 +82,7 @@ The ONLY way to clear context is to **terminate the process entirely**.
 Files become the only memory:
 - Git history (commits)
 - progress.txt (learnings)
-- Task status (single-agent: `prd.json`, dual-agent: Linear + `watcher-state.json`)
+- Task status (single-agent: `prd.json`, dual-agent: Linear + `ralph-dual/watcher-state.json`)
 - AGENTS.md (patterns discovered)
 
 **Iron rule:** One session = one task. If task is too big → context fills → poor code.
@@ -134,9 +134,9 @@ Split responsibilities between two independent bash loops:
 
 Both loops share:
 - Linear (task queue via MCP)
-- epic-guidance.json (lightweight context file)
+- ralph-dual/epic-guidance.json (lightweight context file)
 - Git repository (code + history)
-- progress.txt (learnings log)
+- ralph-dual/progress.txt (learnings log)
 
 ### Why Two Agents?
 
@@ -178,7 +178,7 @@ Watcher discovers "New feature opportunity: batch operations"
 
 ```bash
 while :; do
-  cat watcher.md | claude --dangerously-skip-permissions --print
+  cat ralph-dual/watcher.md | claude --dangerously-skip-permissions --print
   sleep 30  # Optional: rate limiting
 done
 ```
@@ -198,18 +198,18 @@ done
 
 ```bash
 while :; do
-  cat builder.md | claude --dangerously-skip-permissions --print
+  cat ralph-dual/builder.md | claude --dangerously-skip-permissions --print
 done
 ```
 
 **Builder responsibilities:**
-- Read epic-guidance.json for context
+- Read ralph-dual/epic-guidance.json for context
 - Query Linear for ONE highest-priority unblocked task (two-stage query)
 - Implement the task
 - Run tests (backpressure)
 - Commit changes
 - Update Linear task status → Done
-- Document learnings in progress.txt
+- Document learnings in ralph-dual/progress.txt
 
 **Builder does NOT:**
 - Create new tasks (only prerequisite tasks when blocked)
@@ -224,16 +224,16 @@ done
 - `Done` → Complete
 - `Backlog` → Blocked or needs clarification
 
-**Via epic-guidance.json:**
+**Via ralph-dual/epic-guidance.json:**
 - Human configures once (Linear IDs, conventions, docs)
 - Both agents read for context
 - Stays small (< 50 lines)
 
-**Via watcher-state.json:**
+**Via ralph-dual/watcher-state.json:**
 - Watcher updates with current phase, epic, testing progress
 - Builder does not use this file
 
-**Via progress.txt (File Mode - default):**
+**Via ralph-dual/progress.txt (File Mode - default):**
 - Both agents curate (not append-only)
 - Max 20 Codebase Patterns, max 10 Recent Sessions
 - Keeps context small for future iterations
@@ -242,7 +242,7 @@ done
 - Semantic search instead of reading entire file
 - Confidence scoring improves pattern quality over time
 - Team sharing via Engram sync
-- Configure by adding `recallStore` to epic-guidance.json
+- Configure by adding `recallStore` to ralph-dual/epic-guidance.json
 - See `docs/SETUP-RECALL.md` for setup
 
 ### Required MCP Servers
@@ -283,7 +283,7 @@ Dual-agent mode is a **fork of the original Ralph pattern**. It keeps the core p
 
 But it replaces how tasks are managed:
 - **Original**: `prd.json` (bounded task list, human-defined upfront)
-- **Dual-agent**: Linear + `watcher-state.json` (unlimited tasks, continuously discovered)
+- **Dual-agent**: Linear + `ralph-dual/watcher-state.json` (unlimited tasks, continuously discovered)
 
 And splits one agent into two specialized roles:
 - **Original**: Single agent finds AND fixes problems
@@ -303,33 +303,35 @@ The two modes are **completely separate** - you use one OR the other, never both
 **Dual-Agent Mode** (this architecture):
 | File | Purpose |
 |------|---------|
-| `watcher.sh` + `builder.sh` | Bash loops (one per agent) |
-| `watcher.ps1` + `builder.ps1` | PowerShell loops (Windows) |
-| `watcher.md` + `builder.md` | Agent prompts |
-| `watcher-state.json` | Watcher's phases, epics, testing progress |
-| `epic-guidance.json` | Linear config, conventions, docs path |
+| `ralph-dual/watcher.sh` + `ralph-dual/builder.sh` | Bash loops (one per agent) |
+| `ralph-dual/watcher.ps1` + `ralph-dual/builder.ps1` | PowerShell loops (Windows) |
+| `ralph-dual/watcher.md` + `ralph-dual/builder.md` | Agent prompts |
+| `ralph-dual/watcher-state.json` | Watcher's phases, epics, testing progress |
+| `ralph-dual/epic-guidance.json` | Linear config, conventions, docs path |
 | Linear (via MCP) | Task list and status (replaces `prd.json`) |
-| `progress.txt` | Learnings (shared by both agents) |
-| `AGENTS.md` | Patterns (shared by both agents) |
+| `ralph-dual/progress.txt` | Learnings (shared by both agents) |
+| `ralph-dual/AGENTS.md` | Patterns (shared by both agents) |
 
-**Key difference:** Single-agent uses `prd.json` for tasks. Dual-agent uses Linear + `watcher-state.json` instead - `prd.json` is not used at all.
+**Key difference:** Single-agent uses `prd.json` for tasks. Dual-agent uses Linear + `ralph-dual/watcher-state.json` instead - `prd.json` is not used at all.
 
 ### Dual-Agent Repository Structure
 
 ```
 ralph/
-├── watcher.md                      # Watcher prompt (phase-based workflow)
-├── builder.md                      # Builder prompt (one task per session)
-├── watcher.sh                      # Watcher bash loop
-├── watcher.ps1                     # Watcher PowerShell loop
-├── builder.sh                      # Builder bash loop
-├── builder.ps1                     # Builder PowerShell loop
-├── epic-guidance.json              # Linear config + project context (both agents read)
-├── epic-guidance.json.example      # Template (file mode - default)
-├── epic-guidance.recall.json.example  # Template (Recall mode - optional)
-├── watcher-state.json              # Watcher's phase and testing progress (Watcher only)
-├── progress.txt                    # Learnings - file mode (both agents curate)
-├── AGENTS.md                       # Operational patterns
+├── ralph-dual/                        # Dual-agent mode files
+│   ├── watcher.md                     # Watcher prompt (phase-based workflow)
+│   ├── builder.md                     # Builder prompt (one task per session)
+│   ├── watcher.sh                     # Watcher bash loop
+│   ├── watcher.ps1                    # Watcher PowerShell loop
+│   ├── builder.sh                     # Builder bash loop
+│   ├── builder.ps1                    # Builder PowerShell loop
+│   ├── AGENTS.md                      # Operational patterns
+│   ├── epic-guidance.json             # Linear config + project context (gitignored)
+│   ├── epic-guidance.json.example     # Template (file mode - default)
+│   ├── epic-guidance.recall.json.example  # Template (Recall mode - optional)
+│   ├── watcher-state.json             # Watcher's phase and testing progress (gitignored)
+│   ├── watcher-state.json.example     # Template for watcher state
+│   └── progress.txt                   # Learnings - file mode (gitignored)
 └── docs/
     ├── DUAL-AI-RALPH-ARCHITECTURE.md  # This document
     └── SETUP-RECALL.md                # Optional Recall enhancement guide
@@ -597,11 +599,11 @@ Unclosed browsers accumulate across sessions → fans spin → memory leak → s
 ```bash
 # Terminal 1 - Watcher
 cd /path/to/project
-./watcher.sh
+./ralph-dual/watcher.sh
 
 # Terminal 2 - Builder
 cd /path/to/project
-./builder.sh
+./ralph-dual/builder.sh
 ```
 
 ### To Check Status
@@ -614,10 +616,10 @@ cat progress.txt | tail -50
 git log --oneline -10
 
 # Check current focus
-cat epic-guidance.json
+cat ralph-dual/epic-guidance.json
 
 # Check watcher state
-cat watcher-state.json
+cat ralph-dual/watcher-state.json
 ```
 
 ### To Stop
@@ -634,12 +636,12 @@ cat watcher-state.json
 git reset --hard
 
 # Clear progress (optional)
-> progress.txt
+> ralph-dual/progress.txt
 
 # Reset watcher state
-cp watcher-state.json.example watcher-state.json
+cp ralph-dual/watcher-state.json.example ralph-dual/watcher-state.json
 
-# Edit epic-guidance.json manually
+# Edit ralph-dual/epic-guidance.json manually
 ```
 
 ---

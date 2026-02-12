@@ -4,8 +4,9 @@ progress.txt
 .last-branch
 
 # Dual-AI configuration (contains user-specific config)
-epic-guidance.json
-watcher-state.json
+ralph-dual/epic-guidance.json
+ralph-dual/watcher-state.json
+ralph-dual/progress.txt
 
 # Archive is optional to commit
 # archive/

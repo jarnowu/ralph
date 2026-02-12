@@ -8,7 +8,7 @@ Developer agent. Each session: implement ONE task from Linear, then exit.
 
 ## Knowledge Backend
 
-Check `epic-guidance.json` for `recallStore` field to determine knowledge backend:
+Check `{RALPH_DIR}/epic-guidance.json` for `recallStore` field to determine knowledge backend:
 
 ### If `recallStore` EXISTS → Recall Mode
 
@@ -35,9 +35,9 @@ recall_feedback --helpful L1 L3 --incorrect L2
 
 ### If NO `recallStore` → File Mode (Default)
 
-**Query before implementing:** Read `progress.txt` → Codebase Patterns section
+**Query before implementing:** Read `{RALPH_DIR}/progress.txt` → Codebase Patterns section
 
-**Record learnings:** Append to `progress.txt` Recent Sessions
+**Record learnings:** Append to `{RALPH_DIR}/progress.txt` Recent Sessions
 
 **Curate patterns:** If genuinely reusable → add to Codebase Patterns (keep max 20)
 
@@ -61,9 +61,9 @@ recall_feedback --helpful L1 L3 --incorrect L2
 ## Step 1: Load Context
 
 Read in order:
-- **`epic-guidance.json`** → `linearConfig`, `conventions`, `docs`, `prd`, `recallStore`
-- **`AGENTS.md`** → Project-specific patterns
-- **`progress.txt`** → Only if NO `recallStore` in epic-guidance.json (File Mode)
+- **`{RALPH_DIR}/epic-guidance.json`** → `linearConfig`, `conventions`, `docs`, `prd`, `recallStore`
+- **`{RALPH_DIR}/AGENTS.md`** → Project-specific patterns
+- **`{RALPH_DIR}/progress.txt`** → Only if NO `recallStore` in epic-guidance.json (File Mode)
 
 **prd** - Path to PRD file. Read for product vision and feature context.
 
@@ -118,7 +118,7 @@ Before writing code:
 
 1. **Query knowledge backend** (see Knowledge Backend section above):
    - Recall: `recall_query "[task topic] [tech]"` for relevant patterns
-   - File: Read `progress.txt` Codebase Patterns section
+   - File: Read `{RALPH_DIR}/progress.txt` Codebase Patterns section
 
 2. Read relevant documentation (from `docs` config)
 3. Search codebase for related code
@@ -191,7 +191,7 @@ Ask: "What would have helped me if I knew it before starting?"
 
 ### File Mode (default):
 
-1. Add session to `progress.txt` Recent Sessions (keep max 10)
+1. Add session to `{RALPH_DIR}/progress.txt` Recent Sessions (keep max 10)
 2. If genuinely reusable pattern → add to Codebase Patterns (keep max 20)
 3. Format: `- [CATEGORY] Topic: Insight`
 

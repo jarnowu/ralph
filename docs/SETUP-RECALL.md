@@ -317,7 +317,7 @@ recall sync pull --store ralph-my-project
 
 > **Note:** `recall sync bootstrap` requires a snapshot to exist in Engram. For brand new stores, use `push` first to populate Engram. Use `bootstrap` only when syncing an existing store to a new machine.
 
-### Configure epic-guidance.json
+### Configure ralph-dual/epic-guidance.json
 
 Add the `recallStore` field:
 
@@ -343,10 +343,10 @@ No changes needed — agents auto-detect Recall mode from config:
 
 ```bash
 # Terminal 1
-./watcher.ps1   # or ./watcher.sh
+./ralph-dual/watcher.ps1   # or ./ralph-dual/watcher.sh
 
 # Terminal 2
-./builder.ps1   # or ./builder.sh
+./ralph-dual/builder.ps1   # or ./ralph-dual/builder.sh
 ```
 
 ---
@@ -624,18 +624,18 @@ curl http://localhost:8080/api/v1/health
 3. Configure shell environment for CLI
 4. Configure MCP with Engram connection
 5. Create store in Engram, then locally
-6. Add `recallStore` to epic-guidance.json
+6. Add `recallStore` to ralph-dual/epic-guidance.json
 
 ### Recall → File
 
-1. Remove `recallStore` from epic-guidance.json
+1. Remove `recallStore` from ralph-dual/epic-guidance.json
 2. Agents automatically use progress.txt
 3. Recall data persists (can switch back anytime)
 4. Engram can be stopped if not needed
 
 ---
 
-**Config template:** See `epic-guidance.recall.json.example`
+**Config template:** See `ralph-dual/epic-guidance.recall.json.example`
 
 **Repositories:**
 - Recall: https://github.com/hyperengineering/recall

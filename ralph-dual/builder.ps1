@@ -72,8 +72,11 @@ while ($true) {
     Write-Host ""
     Write-Host "=== Builder Session $iteration - $(Get-Date) ===" -ForegroundColor Cyan
 
-    # Prepare prompt
+    # Prepare prompt with directory-aware path substitution
     $PromptContent = Get-Content $BuilderPrompt -Raw
+    $RalphDir = [System.IO.Path]::GetRelativePath((Get-Location).Path, $ScriptDir) -replace '\\', '/'
+    if (-not $RalphDir -or $RalphDir -eq '.') { $RalphDir = Split-Path -Leaf $ScriptDir }
+    $PromptContent = $PromptContent.Replace('{RALPH_DIR}', $RalphDir)
     if ($Project) {
         $PromptContent = "**PROJECT**: Use Linear project '$Project'`n`n$PromptContent"
     }

@@ -6,7 +6,7 @@ Ralph is an autonomous AI agent loop that runs AI coding tools repeatedly until 
 
 **Two Modes:**
 1. **Single-Agent Mode** (`ralph.sh`) - Uses `prd.json` for bounded task lists (5-15 stories)
-2. **Dual-Agent Mode** (`watcher.sh` + `builder.sh`) - Uses Linear for continuous development
+2. **Dual-Agent Mode** (`ralph-dual/watcher.sh` + `ralph-dual/builder.sh`) - Uses Linear for continuous development
 
 ## Single-Agent Mode (Original Ralph)
 
@@ -30,35 +30,35 @@ Two independent agents coordinated through Linear:
 
 | Agent | Script | Role |
 |-------|--------|------|
-| **Watcher** | `watcher.sh` | QA/Product Owner - Tests app, finds issues, creates Linear tasks |
-| **Builder** | `builder.sh` | Developer - Implements ONE Linear task per iteration |
+| **Watcher** | `ralph-dual/watcher.sh` | QA/Product Owner - Tests app, finds issues, creates Linear tasks |
+| **Builder** | `ralph-dual/builder.sh` | Developer - Implements ONE Linear task per iteration |
 
 ```bash
 # Terminal 1: Start Watcher (tests app, creates tasks)
-./watcher.sh --project "My Project"
+./ralph-dual/watcher.sh --project "My Project"
 
 # Terminal 2: Start Builder (implements tasks)
-./builder.sh --project "My Project"
+./ralph-dual/builder.sh --project "My Project"
 ```
 
 **Key Files:**
-- `watcher.md` / `builder.md` - Agent prompts (one task per session)
-- `watcher.sh` / `builder.sh` - Bash loops (provide continuity)
-- `epic-guidance.json` - Linear config and project context
-- `watcher-state.json` - Watcher's testing progress and coverage
+- `ralph-dual/watcher.md` / `ralph-dual/builder.md` - Agent prompts (one task per session)
+- `ralph-dual/watcher.sh` / `ralph-dual/builder.sh` - Bash loops (provide continuity)
+- `ralph-dual/epic-guidance.json` - Linear config and project context
+- `ralph-dual/watcher-state.json` - Watcher's testing progress and coverage
 - Linear - Task queue (replaces `prd.json`)
 
 **Shared Resources:**
-- `epic-guidance.json` - Linear config and project context
-- `watcher-state.json` - Watcher's phase and testing progress
+- `ralph-dual/epic-guidance.json` - Linear config and project context
+- `ralph-dual/watcher-state.json` - Watcher's phase and testing progress
 - Git repository - Code and commit history
 - **Knowledge backend** (one of):
-  - `progress.txt` - File mode (default, zero setup)
+  - `ralph-dual/progress.txt` - File mode (default, zero setup)
   - Recall MCP - Semantic search mode (optional, see `docs/SETUP-RECALL.md`)
 
 ### Knowledge Backend
 
-Agents auto-detect backend from `epic-guidance.json`:
+Agents auto-detect backend from `ralph-dual/epic-guidance.json`:
 - **No `recallStore` field** → File mode (progress.txt)
 - **Has `recallStore` field** → Recall mode (keyword search, semantic with Engram)
 
@@ -95,10 +95,10 @@ Semantic search with confidence scoring. See `docs/SETUP-RECALL.md` for setup.
 ./ralph.sh --tool claude 10    # Run 10 iterations with Claude Code
 
 # Dual-Agent Mode
-./watcher.sh --sleep 60        # Test every 60 seconds
-./builder.sh --sleep 5         # Check for tasks every 5 seconds
-./watcher.sh --project "App"   # Override Linear project
-./builder.sh --max 50          # Run max 50 iterations
+./ralph-dual/watcher.sh --sleep 60        # Test every 60 seconds
+./ralph-dual/builder.sh --sleep 5         # Check for tasks every 5 seconds
+./ralph-dual/watcher.sh --project "App"   # Override Linear project
+./ralph-dual/builder.sh --max 50          # Run max 50 iterations
 
 # Flowchart dev server
 cd flowchart && npm run dev
@@ -118,7 +118,7 @@ cd flowchart && npm run dev
 
 ### Files as Memory
 - **Knowledge backend** - Learnings and patterns:
-  - File mode: `progress.txt` (curated: max 20 patterns, 10 sessions)
+  - File mode: `ralph-dual/progress.txt` (curated: max 20 patterns, 10 sessions)
   - Recall mode: SQLite via MCP (unlimited, keyword search)
 - `AGENTS.md` - Project-specific patterns for AI tools
 - Git commits - Record of completed work
@@ -167,12 +167,12 @@ parentId: currentEpic.linearId (UUID, not identifier)
 - Implement the task following existing patterns
 - Run quality checks, commit only if passing
 - Mark task "Done" in Linear
-- Append learnings to `progress.txt`
+- Append learnings to `ralph-dual/progress.txt`
 - **Never creates new tasks**
 
 ### Coordination via State
 - Linear task states: Todo → In Progress → Done
-- `epic-guidance.json`: Current epic context
+- `ralph-dual/epic-guidance.json`: Current epic context
 - No direct communication between agents
 
 ### Linear Query Efficiency
@@ -212,12 +212,12 @@ parentId: currentEpic.linearId (UUID, not identifier)
 ## Setup for Dual-Agent Mode
 
 1. Create Linear project for your app
-2. Copy `epic-guidance.json.example` to `epic-guidance.json`
+2. Copy `ralph-dual/epic-guidance.json.example` to `ralph-dual/epic-guidance.json`
 3. Configure `linearConfig.teamId` and `linearConfig.projectId`
 4. Set `currentEpic` with your initial focus
 5. (Optional) Enable Recall for persistent knowledge search:
    - See `docs/SETUP-RECALL.md` for setup
-   - Or use `epic-guidance.recall.json.example` as template
+   - Or use `ralph-dual/epic-guidance.recall.json.example` as template
 6. Start both agents in separate terminals
 
 ## Flowchart

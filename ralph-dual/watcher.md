@@ -8,7 +8,7 @@ QA agent. Find **real issues**, suggest **genuine improvements**. If the app is 
 
 ## Knowledge Backend
 
-Check `epic-guidance.json` for `recallStore` field to determine knowledge backend:
+Check `{RALPH_DIR}/epic-guidance.json` for `recallStore` field to determine knowledge backend:
 
 ### If `recallStore` EXISTS → Recall Mode
 
@@ -35,9 +35,9 @@ recall_feedback --helpful L1 --not-relevant L2
 
 ### If NO `recallStore` → File Mode (Default)
 
-**Query knowledge:** Read `progress.txt` → Codebase Patterns section
+**Query knowledge:** Read `{RALPH_DIR}/progress.txt` → Codebase Patterns section
 
-**Record discoveries:** Append to `progress.txt` Recent Sessions (keep max 10)
+**Record discoveries:** Append to `{RALPH_DIR}/progress.txt` Recent Sessions (keep max 10)
 
 **Curate patterns:** If genuinely reusable → add to Codebase Patterns (keep max 20)
 
@@ -54,7 +54,7 @@ recall_feedback --helpful L1 --not-relevant L2
 
 ## Project Config
 
-Read `epic-guidance.json` at session start for:
+Read `{RALPH_DIR}/epic-guidance.json` at session start for:
 
 **testCredentials** - Login to access protected routes:
 - Use appropriate role (admin for admin features, user for regular)
@@ -84,7 +84,7 @@ Call `browser_close` before exiting every session. Unclosed browsers accumulate.
 ## Session Flow
 
 ```
-READ watcher-state.json → WHAT PHASE? → discovery | testing | review | maintenance
+READ {RALPH_DIR}/watcher-state.json → WHAT PHASE? → discovery | testing | review | maintenance
 ```
 
 ---
@@ -93,7 +93,7 @@ READ watcher-state.json → WHAT PHASE? → discovery | testing | review | maint
 
 **Goal:** Understand app and vision, import OR create epics.
 
-1. Read `epic-guidance.json` - extract `teamId`, `projectId`, `defaultLabels`
+1. Read `{RALPH_DIR}/epic-guidance.json` - extract `teamId`, `projectId`, `defaultLabels`
 
 2. **If `prd` field exists, read the PRD file** to understand:
    - What is this product?
@@ -108,7 +108,7 @@ READ watcher-state.json → WHAT PHASE? → discovery | testing | review | maint
    ```
 
 4. **If existing epics found:**
-   - Import them into `watcher-state.json` (don't create duplicates!)
+   - Import them into `{RALPH_DIR}/watcher-state.json` (don't create duplicates!)
    - For each epic, identify its routes by reading its description or subtasks
    - If routes unclear, launch browser to discover routes for that feature area
 
@@ -125,7 +125,7 @@ READ watcher-state.json → WHAT PHASE? → discovery | testing | review | maint
      ```
    - Use PRD context (if available) to identify planned features as epics
 
-6. Update `watcher-state.json`:
+6. Update `{RALPH_DIR}/watcher-state.json`:
    ```json
    {
      "phase": "testing",
@@ -148,13 +148,13 @@ READ watcher-state.json → WHAT PHASE? → discovery | testing | review | maint
 
 1. Read state → get current epic, route, category
 
-2. **If `prd` field exists in `watcher-state.json`, read the PRD file** to understand:
+2. **If `prd` field exists in `{RALPH_DIR}/watcher-state.json`, read the PRD file** to understand:
    - What is this product?
    - Who are the users?
    - What are the goals/features planned?
    - Use this context when creating epics and suggesting features
 
-3. **If `docs` field exists in `watcher-state.json`, read the index file** to understand:
+3. **If `docs` field exists in `{RALPH_DIR}/watcher-state.json`, read the index file** to understand:
    - How documentation is structured
    - Which documents are relevant to current task
    - How to avoid cluttered, unnecessary documentation
@@ -218,16 +218,16 @@ READ watcher-state.json → WHAT PHASE? → discovery | testing | review | maint
    - What are the goals/features planned?
    - Use this context when creating epics and suggesting features   
 
-3. **If `docs` field exists in `watcher-state.json`, read the index file** to understand:
+3. **If `docs` field exists in `{RALPH_DIR}/watcher-state.json`, read the index file** to understand:
    - How documentation is structured
    - Which documents are relevant to current task
-   - How to avoid cluttered, unnecessary documentation   
+   - How to avoid cluttered, unnecessary documentation
 
 4. If all epics tested:
    - **Check Linear for NEW epics** (created outside Watcher, e.g., manually):
      ```
      list_issues: team, project, limit=20
-     Filter: no parentId AND not in watcher-state.json
+     Filter: no parentId AND not in {RALPH_DIR}/watcher-state.json
      ```
    - If new epics found → import them, set `phase = "testing"`
    - If no new epics:
@@ -255,7 +255,7 @@ READ watcher-state.json → WHAT PHASE? → discovery | testing | review | maint
    - Confidence scores improve automatically over time
 
    **File Mode** (default):
-   - Curate `progress.txt`: keep max 20 patterns, last 10 sessions
+   - Curate `{RALPH_DIR}/progress.txt`: keep max 20 patterns, last 10 sessions
    - Remove outdated or project-specific patterns
    - Consolidate similar patterns
 
