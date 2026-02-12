@@ -135,7 +135,13 @@ while :; do
   # Prepare prompt with directory-aware path substitution
   PROMPT_CONTENT=$(cat "$BUILDER_PROMPT")
   RALPH_DIR="${SCRIPT_DIR#$(pwd)/}"
-  [ "$RALPH_DIR" = "$SCRIPT_DIR" ] && RALPH_DIR=$(realpath --relative-to="$(pwd)" "$SCRIPT_DIR" 2>/dev/null || basename "$SCRIPT_DIR")
+  if [ "$RALPH_DIR" = "$SCRIPT_DIR" ]; then
+    if [ "$SCRIPT_DIR" = "$(pwd)" ]; then
+      RALPH_DIR="."
+    else
+      RALPH_DIR=$(realpath --relative-to="$(pwd)" "$SCRIPT_DIR" 2>/dev/null || basename "$SCRIPT_DIR")
+    fi
+  fi
   PROMPT_CONTENT="${PROMPT_CONTENT//\{RALPH_DIR\}/$RALPH_DIR}"
   if [ -n "$PROJECT_OVERRIDE" ]; then
     PROMPT_CONTENT="**PROJECT**: Use Linear project '$PROJECT_OVERRIDE'

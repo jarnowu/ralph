@@ -75,7 +75,7 @@ while ($true) {
     # Prepare prompt with directory-aware path substitution
     $PromptContent = Get-Content $BuilderPrompt -Raw
     $RalphDir = [System.IO.Path]::GetRelativePath((Get-Location).Path, $ScriptDir) -replace '\\', '/'
-    if (-not $RalphDir -or $RalphDir -eq '.') { $RalphDir = Split-Path -Leaf $ScriptDir }
+    if (-not $RalphDir) { $RalphDir = Split-Path -Leaf $ScriptDir }
     $PromptContent = $PromptContent.Replace('{RALPH_DIR}', $RalphDir)
     if ($Project) {
         $PromptContent = "**PROJECT**: Use Linear project '$Project'`n`n$PromptContent"
